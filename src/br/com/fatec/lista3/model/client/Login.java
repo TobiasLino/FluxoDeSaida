@@ -15,35 +15,7 @@
         along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
 
  */
-package br.com.fatec.lista3.model.user;
+package br.com.fatec.lista3.model.client;
 
-public class Phone {
-        private String ddd;
-        private String number;
-
-        public Phone() {
-                ddd = "";
-                number = "";
-        }
-
-        public void print() {
-                System.out.println("\tTelefone:\n"
-                        + "\t\t(" + ddd + ") " + number);
-        }
-
-        public String getDdd() {
-                return ddd;
-        }
-
-        public void setDdd(String ddd) {
-                this.ddd = ddd;
-        }
-
-        public String getNumber() {
-                return number;
-        }
-
-        public void setNumber(String number) {
-                this.number = number;
-        }
+public class Login {
 }
