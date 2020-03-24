@@ -1,0 +1,69 @@
+CREATE TABLE users (
+    id INT NOT NULL AUTO_INCREMENT,
+    username CHAR(20) NOT NULL,
+    password CHAR(16) NOT NULL,
+    PRIMARY KEY(id));
+
+create table people (
+    id INT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    cpf VARCHAR(11) NOT NULL,
+    phone VARCHAR(14),
+    email VARCHAR(100),
+    street VARCHAR(150),
+    number VARCHAR(20),
+    neighborhood VARCHAR(50),
+    city VARCHAR(50),
+    uf CHAR(2),
+    zip VARCHAR(10),
+    people_type CHAR(1) NOT NULL,
+
+    PRIMARY KEY (id)
+);
+
+create table investments (
+    id INT NOT NULL AUTO_INCREMENT,
+    investment Varchar(50),
+    value double,
+    PRIMARY KEY(id)
+);
+
+create table fisical_people (
+    id_fisical_people INT NOT NULL,
+    id_people INT NOT NULL,
+    id_investments INT,
+
+    CONSTRAINT PK_fisical_people PRIMARY KEY (id_fisical_people, id_people),
+    CONSTRAINT FK_fisical_people2 FOREIGN KEY (id_people) REFERENCES people (id),
+    CONSTRAINT FK_fisical_people3 FOREIGN KEY (id_investments) REFERENCES investments(id)
+);
+
+create table legal_people (
+    id_legal_people INT NOT NULL,
+    id_people INT NOT NULL,
+    id_investments INT,
+
+    CONSTRAINT PK_legal_people PRIMARY KEY (id_legal_people, id_people),
+    CONSTRAINT FK_legal_people2 FOREIGN KEY (id_people) REFERENCES people(id),
+    CONSTRAINT FK_legal_people3 FOREIGN KEY (id_investments) REFERENCES investments(id)
+);
+
+create table in_flow (
+    id_in INT NOT NULL AUTO_INCREMENT,
+    id_people INT NOT NULL,
+    sell_date DATE,
+
+    CONSTRAINT PK_in_flow PRIMARY KEY (id_in, id_people),
+    CONSTRAINT FK_in_flow FOREIGN KEY (id_people) REFERENCES people(id)
+);
+
+create table flow (
+                        id_flow INT NOT NULL AUTO_INCREMENT,
+                        id_in INT NOT NULL ,
+                        id_out INT NOT NULL ,
+                        flow_date DATE NOT NULL ,
+
+                        PRIMARY KEY (id_flow),
+                        CONSTRAINT FK_in FOREIGN KEY (id_in) REFERENCES in_flow(id_in),
+                        CONSTRAINT FK_out FOREIGN KEY (id_out) REFERENCES out_flow(id_out)
+  );
