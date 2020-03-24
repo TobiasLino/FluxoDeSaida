@@ -28,6 +28,7 @@ public class Crypto {
 		      
 		      if (decrypt(messageDigest).equals(decrypt(messageDigest2))) {
 		        System.out.println("São iguais");
+		        System.out.println(messageDigest2);
 		        return;
 		      } else {
 		        System.out.println("Erro");

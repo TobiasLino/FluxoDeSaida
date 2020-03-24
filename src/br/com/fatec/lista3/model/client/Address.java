@@ -98,9 +98,7 @@ public class Address {
         }
 
         public void setZip(String zip) {
-                if (zip.substring(0,4).matches("[0-9]*"))
-                        if (zip.substring(6, 9).matches("[0-9]*"))
-                                this.zip = zip;
+                this.zip = zip;
         }
 
         public String getZip() {

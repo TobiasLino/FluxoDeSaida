@@ -20,6 +20,11 @@ package br.com.fatec.lista3.model.user;
 import br.com.fatec.lista3.model.client.Address;
 import br.com.fatec.lista3.model.client.Phone;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.PrimitiveIterator;
+
 public class User {
         private String username;
         private String password;
@@ -43,5 +48,6 @@ public class User {
 
         public void setPassword(String password) {
                 this.password = password;
+
         }
 }

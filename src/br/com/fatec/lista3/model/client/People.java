@@ -19,14 +19,13 @@ package br.com.fatec.lista3.model.client;
 
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public abstract class People {
         protected static int id;
         protected int people_id;
         protected String name;
+        protected String cpf;
         protected Phone phone;
         protected String email;
         protected Address address;
@@ -93,5 +92,13 @@ public abstract class People {
 
         public void setInvestments(Map<String, Double> investments) {
                 this.investments = investments;
+        }
+
+        public String getCpf() {
+                return cpf;
+        }
+
+        public void setCpf(String cpf) {
+                this.cpf = cpf;
         }
 }

@@ -19,10 +19,10 @@ package br.com.fatec.lista3.model.client.type;
 
 import br.com.fatec.lista3.model.client.People;
 
-public class FisicalPeople extends People {
+public class Fisical extends People {
         private double salary;
 
-        public FisicalPeople() {
+        public Fisical() {
                 super();
                 this.salary = 0.0;
         }
