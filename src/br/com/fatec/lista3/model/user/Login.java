@@ -24,21 +24,58 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
 public class Login {
+        private DataBase db;
 
-        public boolean verifyLogin(DataBase db) throws SQLException, NoSuchAlgorithmException {
+        public Login(DataBase db) {
+                this.db = db;
+        }
+
+        public boolean verify() throws SQLException, NoSuchAlgorithmException {
                 Controller ctrl = new Controller();
                 String username = ctrl.getOption("Insira o Username: ");
                 String pass = ctrl.getOption("Insira a senha: ");
                 User to_log = new User(username, pass);
-                return verify(db, to_log);
+                return verify_pass(to_log);
         }
 
-        boolean verify(DataBase db, User user) throws SQLException, NoSuchAlgorithmException {
+        boolean verify_pass(User user) throws SQLException, NoSuchAlgorithmException {
                 User to_comp = db.getUser(user.getUsername());
-                if (to_comp != null) {
-                        return db.decrypt(db.encrypt(user.getPassword())).equals(to_comp.getPassword());
+                if (verify_name(to_comp)) {
+                        String decrypted = db.decrypt(db.encrypt(user.getPassword()));
+                        String db_user = to_comp.getPassword();
+                        return decrypted.equals(db_user);
                 }
                 return false;
+        }
+
+        boolean verify_name(User user) {
+                return !user.getUsername().equals("");
+        }
+
+
+        public boolean tryAgain() throws SQLException, NoSuchAlgorithmException {
+                userOrPassError();
+                boolean logged = false;
+                int attempts = 0;
+                while (attempts < 3) {
+                        logged = verify();
+                        if (logged)
+                                break;
+                        userOrPassError();
+                        attempts++;
+                }
+                return logged;
+        }
+
+        public void notLogged() {
+                System.err.println("Você errou o usuário três vezes."
+                        + "\n Tente novamente outra vez.");
+                System.exit(1);
+        }
+
+        void userOrPassError() {
+                System.err.println("\nUsuário ou senha incorretos."
+                        + "\n    Tente novamente");
         }
 
 }

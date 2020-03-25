@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.util.Arrays;
 
 public class DataBase {
         private Connection connection;
@@ -47,7 +46,7 @@ public class DataBase {
                 return DriverManager.getConnection(url, user, password);
         }
 
-        public void add_client(Fisical fisical) throws SQLException {
+        public void addClient(Fisical fisical) throws SQLException {
                 String to = "INSERT INTO people VALUES("
                         + "0, '"
                         + fisical.getName() + "', '"
@@ -73,11 +72,10 @@ public class DataBase {
                 ps.execute();
         }
 
-        public void add_user(User user) throws SQLException, NoSuchAlgorithmException {
+        public void addUser(User user) throws SQLException, NoSuchAlgorithmException {
                 String to = "INSERT INTO users VALUES (0,"
                         + "? , "
                         + "? );";
-
                 PreparedStatement ps = connection.prepareStatement(to);
                 ps.setString(1, user.getUsername());
                 ps.setBytes(2, encrypt(user.getPassword()));
@@ -86,11 +84,12 @@ public class DataBase {
 
         public User getUser(String username) throws SQLException {
                 Statement stmt = connection.createStatement();
-                ResultSet user = stmt.executeQuery(getUser_info(username));
+                ResultSet user_result = stmt.executeQuery(getUser_info(username));
                 User n = new User("", "");
-                while (user.next()) {
-                        n = new User(user.getString("username"), "");
-                        n.setPassword(decrypt(user.getBytes("password")));
+                assert user_result != null;
+                if (user_result.next()) {
+                        n.setUsername(user_result.getString("username"));
+                        n.setPassword(decrypt(user_result.getBytes("password")));
                 }
                 return n;
         }
@@ -99,15 +98,6 @@ public class DataBase {
                         " FROM users " +
                         "WHERE username='" + username + "' ;#";
         }
-/*
-        public boolean verify(User temporary) throws SQLException {
-                String first = decrypt(temporary.getPassword());
-                String second = decrypt( getUser(temporary.getUsername()).getPassword());
-                return first.equals(second);
-        }
-
-
- */
 
         public byte[] encrypt(String password)
                 throws NoSuchAlgorithmException {
