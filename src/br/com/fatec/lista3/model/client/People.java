@@ -22,37 +22,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class People {
-        protected static int id;
-        protected int people_id;
         protected String name;
         protected String cpf;
         protected Phone phone;
         protected String email;
         protected Address address;
-        protected Map<String, Double> investments;
 
         public People() {
-                people_id = id++;
                 name = "";
                 phone = new Phone();
                 email = "";
                 address = new Address();
-                this.investments = new HashMap<>();
         }
 
         public abstract void print();
-
-        public void addInvestment(String investment, double value) {
-                this.investments.put(investment, value);
-        }
-
-        public void removeInvestment(String investment) {
-                this.investments.remove(investment);
-        }
-
-        public int getPeople_id() {
-                return people_id;
-        }
 
         public String getName() {
                 return name;
@@ -84,14 +67,6 @@ public abstract class People {
 
         public void setEmail(String email) {
                 this.email = email;
-        }
-
-        public Map<String, Double> getInvestments() {
-                return investments;
-        }
-
-        public void setInvestments(Map<String, Double> investments) {
-                this.investments = investments;
         }
 
         public String getCpf() {

@@ -30,7 +30,6 @@ public class Fisical extends People {
         @Override
         public void print() {
                 System.out.println("Dados do cliente:\n"
-                        + "\tID:   " + id + "\n"
                         + "\tNome: " + name);
                 phone.print();
                 System.out.println("\tEmail:\n\t\t"
@@ -38,8 +37,5 @@ public class Fisical extends People {
                 address.print();
                 System.out.println("Salário: " + salary);
                 System.out.println("Investimentos:");
-                investments.forEach((key, value) ->
-                        System.out.printf("\t%s: R$ %.2f\n", key, value)
-                );
         }
 }

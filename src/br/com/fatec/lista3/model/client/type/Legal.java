@@ -30,17 +30,12 @@ public class Legal extends People {
         @Override
         public void print() {
                 System.out.println("Dados do cliente:\n"
-                        + "\tID:   " + id + "\n"
                         + "\tNome: " + name);
                 phone.print();
                 System.out.println("\tEmail:\n\t\t"
                         + email);
                 address.print();
                 System.out.println("Receita de Vendas: " + salesRevenue);
-                System.out.println("Investimentos:");
-                investments.forEach((key, value) ->
-                        System.out.printf("\t%s: R$ %.2f\n", key, value)
-                );
         }
 
         public double getSalesRevenue() {

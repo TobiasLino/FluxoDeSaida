@@ -17,8 +17,10 @@
  */
 package br.com.fatec.lista3.model.user;
 
+import br.com.fatec.lista3.app.App;
 import br.com.fatec.lista3.controller.Controller;
 import br.com.fatec.lista3.controller.DataBase;
+import br.com.fatec.lista3.view.Menu;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -28,6 +30,24 @@ public class Login {
 
         public Login(DataBase db) {
                 this.db = db;
+        }
+
+        public void signIn(boolean logged) {
+                try {
+                        logged = verify();
+                        if (logged)
+                                App.start();
+                        else if (tryAgain())
+                                App.start();
+                        else
+                                notLogged();
+                } catch (NoSuchAlgorithmException | SQLException e) {
+                        e.printStackTrace();
+                }
+        }
+
+        public void signUp() {
+
         }
 
         public boolean verify() throws SQLException, NoSuchAlgorithmException {
