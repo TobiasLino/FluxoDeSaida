@@ -20,10 +20,6 @@ package br.com.fatec.lista3.model.user;
 import br.com.fatec.lista3.app.App;
 import br.com.fatec.lista3.controller.Controller;
 import br.com.fatec.lista3.controller.DataBase;
-import br.com.fatec.lista3.view.Menu;
-
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 
 public class Login {
         private DataBase db;
@@ -33,37 +29,33 @@ public class Login {
         }
 
         public void signIn(boolean logged) {
-                try {
-                        logged = verify();
-                        if (logged)
-                                App.start();
-                        else if (tryAgain())
-                                App.start();
-                        else
-                                notLogged();
-                } catch (NoSuchAlgorithmException | SQLException e) {
-                        e.printStackTrace();
-                }
+                logged = verify();
+                if (logged)
+                        App.start();
+                else if (tryAgain())
+                        App.start();
+                else
+                        notLogged();
         }
 
         public void signUp() {
 
         }
 
-        public boolean verify() throws SQLException, NoSuchAlgorithmException {
+        public boolean verify() {
                 Controller ctrl = new Controller();
                 String username = ctrl.getOption("Insira o Username: ");
                 String pass = ctrl.getOption("Insira a senha: ");
-                User to_log = new User(username, pass);
+                User to_log = new User();
+                to_log.setUsername(username);
+                to_log.setPassword(pass);
                 return verify_pass(to_log);
         }
 
-        boolean verify_pass(User user) throws SQLException, NoSuchAlgorithmException {
-                User to_comp = db.getUser(user.getUsername());
-                if (verify_name(to_comp)) {
-                        String decrypted = db.decrypt(db.encrypt(user.getPassword()));
-                        String db_user = to_comp.getPassword();
-                        return decrypted.equals(db_user);
+        boolean verify_pass(User user) {
+                User toComp = db.getUser(user.getUsername());
+                if (verify_name(toComp)) {
+                        return toComp.getPassword().equals(user.getPassword());
                 }
                 return false;
         }
@@ -73,7 +65,7 @@ public class Login {
         }
 
 
-        public boolean tryAgain() throws SQLException, NoSuchAlgorithmException {
+        public boolean tryAgain() {
                 userOrPassError();
                 boolean logged = false;
                 int attempts = 0;

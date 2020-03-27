@@ -27,9 +27,4 @@ public class Controller {
         public boolean canBeInt(String str) {
                 return str.matches("[0-9]*");
         }
-
-        /* Realiza o cadastro de uma nova entrada. */
-        public void registerEntry(DataBase db) {
-                Input entry = new Input();
-        }
 }

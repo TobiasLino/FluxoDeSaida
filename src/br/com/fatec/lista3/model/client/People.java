@@ -27,12 +27,14 @@ public abstract class People {
         protected Phone phone;
         protected String email;
         protected Address address;
+        private String people_type;     // 'F' for Fisical and 'L' for Legal.
 
         public People() {
                 name = "";
                 phone = new Phone();
                 email = "";
                 address = new Address();
+                people_type = "F";
         }
 
         public abstract void print();
@@ -75,5 +77,13 @@ public abstract class People {
 
         public void setCpf(String cpf) {
                 this.cpf = cpf;
+        }
+
+        public String getPeople_type() {
+                return people_type;
+        }
+
+        public void setPeople_type(String people_type) {
+                this.people_type = people_type;
         }
 }

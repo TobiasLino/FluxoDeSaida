@@ -34,7 +34,6 @@ public class App {
                 while (true) {
                         switch (menu.mainMenu()) {
                                 /* Registro de entrada. */
-                                case 1: ctrl.registerEntry(db); break;
                                 /* Sair do programa. */
                                 case 2: App.__init__();
                         }

@@ -1,7 +1,6 @@
 package br.com.fatec.lista3.model.flow;
 
 import br.com.fatec.lista3.model.client.People;
-import br.com.fatec.lista3.model.client.type.Fisical;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -13,7 +12,6 @@ public class Input {
         private Date date;
 
         public Input() {
-                people = new Fisical();                 // Por padrão o tipo de pessoa é física.
                 date = new Date();                      // Data do dia corrente.
                 // Map de investimentos com o nome e valor (key e value, respectivamente.)
                 this.investments = new HashMap<>();

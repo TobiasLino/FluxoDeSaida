@@ -59,8 +59,9 @@ public class Menu {
         /* Menu Principal */
         public int mainMenu() {
                 System.out.println("\nInsira uma das opções:\n"
-                        + "\t1. Cadastrar Entrada.\n"
-                        + "\t2. Sair.\n");
+                        + "\t1. Meu Flow\n"
+                        + "\t2. Minhas Despesas\n"
+                        + "\t3. Sair.\n");
                 return ctrl.getIntOption("Qual sua opção? : ");
         }
 
