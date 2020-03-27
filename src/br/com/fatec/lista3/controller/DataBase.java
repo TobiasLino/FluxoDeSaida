@@ -16,110 +16,118 @@
 
  */
 package br.com.fatec.lista3.controller;
-
-import br.com.fatec.lista3.model.client.type.Fisical;
 import br.com.fatec.lista3.model.user.User;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+import com.google.firebase.database.*;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.*;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DataBase {
-        private Connection connection;
 
         public DataBase() {
                 try {
-                        // Carrega o driver
-                        DriverManager.registerDriver(new com.mysql.jdbc.Driver());
-                        connection = createConnection();
-                } catch (ClassNotFoundException | SQLException e) {
+                        // Chave de acesso
+                        FileInputStream serviceAccount = new FileInputStream(".firebase/" +
+                                "/virtual-wallet-fatec-poo3-2020-firebase-adminsdk-esfrj-5798826318.json");
+                        connect(serviceAccount);
+                } catch (IOException e) {
                         e.printStackTrace();
                 }
         }
+        /*
+         * Método que carrega o banco de dados
+         * A entrada é o caminho para o arquivo json com a serviceAcount.
+         */
+        void connect(FileInputStream serviceAccount) throws IOException {
+                // Inicia o aplicativo com previlégios de admin.
+                FirebaseOptions options = new FirebaseOptions.Builder()
+                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                        .setDatabaseUrl("https://virtual-wallet-fatec-poo3-2020.firebaseio.com")
+                        .build();
+                FirebaseApp.initializeApp(options);
 
-        private static Connection createConnection() throws SQLException, ClassNotFoundException {
-                String url = "jdbc:mysql://localhost:3306/feira";
-                String user = "feira";
-                String password = "feira";
-
-                return DriverManager.getConnection(url, user, password);
+                DatabaseReference ref = FirebaseDatabase.getInstance()
+                        .getReference("resctricted_acess/secret_document");
+                ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                Object document = dataSnapshot.getValue();
+                                System.out.println(document);
+                        }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                        }
+                });
         }
+        /*
+         * Adiciona novo usuário no firebase usando uma estrutura de map
+         * O índice será o nome de usuário.
+         */
+        public void addUser(User user) {
+                final FirebaseDatabase database = FirebaseDatabase.getInstance();
+                DatabaseReference ref = database.getReference();
+                DatabaseReference users = ref.child("users");
 
-        public void add_client(Fisical fisical) throws SQLException {
-                String to = "INSERT INTO people VALUES("
-                        + "0, '"
-                        + fisical.getName() + "', '"
-                        + fisical.getCpf() + "', '"
-                        + fisical.getPhone().getDdd() + fisical.getPhone().getNumber() + "', '"
-                        + fisical.getEmail() + "', '"
-                        + fisical.getAddress().getStreet() + "', '"
-                        + fisical.getAddress().getNumber() + "', '"
-                        + fisical.getAddress().getComplement() + "', '"
-                        + fisical.getAddress().getNeighborhood() + "', '"
-                        + fisical.getAddress().getCity() + "', '"
-                        + fisical.getAddress().getState() + "', '"
-                        + fisical.getAddress().getZip() + "', '"
-                        + "F" + "'"
-                        + ");";
-                PreparedStatement ps = connection.prepareStatement(to);
-                ps.execute();
+                Map<String, User> in = new HashMap<>();
+                in.put(user.getUsername(), user);
+
+                users.setValueAsync(in);
         }
+        /*
+         * Atualiza o usuário no firebase.
+         * a entrada é o nick do antigo usuário, o usuário atualizado e
+         * o que será atualizado, senha ou nick.
+         */
+        public void updateUser(String oldUsername, User user, String what) throws NoSuchAlgorithmException {
+                final FirebaseDatabase database = FirebaseDatabase.getInstance();
+                DatabaseReference ref = database.getReference("server/savig-data/fireblog");
+                DatabaseReference users = ref.child("users");
+                DatabaseReference update = users.child(oldUsername);
 
-        private void createDataBase() throws SQLException {
-                String create = "CREATE DATABASE IF NOT EXISTS localDB;";
-                PreparedStatement ps = connection.prepareStatement(create);
-                ps.execute();
-        }
-
-        public void add_user(User user) throws SQLException, NoSuchAlgorithmException {
-                String to = "INSERT INTO users VALUES (0,"
-                        + "? , "
-                        + "? );";
-
-                PreparedStatement ps = connection.prepareStatement(to);
-                ps.setString(1, user.getUsername());
-                ps.setBytes(2, encrypt(user.getPassword()));
-                ps.execute();
-        }
-
-        public User getUser(String username) throws SQLException {
-                Statement stmt = connection.createStatement();
-                ResultSet user = stmt.executeQuery(getUser_info(username));
-                User n = new User("", "");
-                while (user.next()) {
-                        n = new User(user.getString("username"), "");
-                        n.setPassword(decrypt(user.getBytes("password")));
+                Map<String, Object> in = new HashMap<>();
+                switch (what) {
+                        case "USERNAME":
+                                in.put("username", user.getUsername());
+                        case "PASSWORD":
+                                in.put("password", user.getPassword());
                 }
-                return n;
-        }
-        public String getUser_info(String username) {
-                return "SELECT *" +
-                        " FROM users " +
-                        "WHERE username='" + username + "' ;#";
-        }
-/*
-        public boolean verify(User temporary) throws SQLException {
-                String first = decrypt(temporary.getPassword());
-                String second = decrypt( getUser(temporary.getUsername()).getPassword());
-                return first.equals(second);
+
+                update.updateChildrenAsync(in);
         }
 
+        /*
+         * Realiza uma consulta no firebase em busca de um usuário com username fornecido
+         */
+        public User getUser(String username) {
+                final FirebaseDatabase database = FirebaseDatabase.getInstance();
+                DatabaseReference users = database.getReference("users");
+                User user = new User();
+                users.orderByChild("users").equalTo(username).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                insertIntoUser(user, dataSnapshot);
+                        }
 
- */
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
 
-        public byte[] encrypt(String password)
-                throws NoSuchAlgorithmException {
-                MessageDigest alg = MessageDigest.getInstance("SHA-256");
-                return alg.digest(password.getBytes(StandardCharsets.UTF_8));
+                        }
+                });
+                return user;
+        }
+        /* Insere os dados obtidos em um user */
+        void insertIntoUser(User user, DataSnapshot snapshot) {
+                user.setUsername((String) snapshot.child("username").getValue());
+                user.setPassword((String) snapshot.child("password").getValue());
         }
 
-        public String decrypt(byte[] messageDigest) {
-                StringBuilder hex = new StringBuilder();
-                for (byte b : messageDigest) {
-                        hex.append((String.format("%02x", 0xFF & b)));
-                }
-                return hex.toString();
-        }
 }

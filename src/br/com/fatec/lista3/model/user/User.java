@@ -17,21 +17,17 @@
  */
 package br.com.fatec.lista3.model.user;
 
-import br.com.fatec.lista3.model.client.Address;
-import br.com.fatec.lista3.model.client.Phone;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.PrimitiveIterator;
 
 public class User {
         private String username;
         private String password;
 
-        public User(String username, String password) {
-                this.username = username;
-                this.password = password;
+        public User() {
+                password = "";
+                username = "";
         }
 
         public String getUsername() {
@@ -47,7 +43,32 @@ public class User {
         }
 
         public void setPassword(String password) {
-                this.password = password;
+                try {
+                        byte[] p = encrypt(password);
+                        this.password = decrypt(p);
+                } catch (NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+                }
 
+        }
+
+        /*
+         * Retorna uma hash SHA-256 em formato byte[] de tamanho 32bytes.
+         */
+        private byte[] encrypt(String password)
+                throws NoSuchAlgorithmException {
+                MessageDigest alg = MessageDigest.getInstance("SHA-256");
+                return alg.digest(password.getBytes(StandardCharsets.UTF_8));
+        }
+
+        /*
+         * Retorna uma string criptografada a partir de uma mensagem de 32bytes.
+         */
+        public String decrypt(byte[] messageDigest) {
+                StringBuilder hex = new StringBuilder();
+                for (byte b : messageDigest) {
+                        hex.append((String.format("%02x", 0xFF & b)));
+                }
+                return hex.toString();
         }
 }

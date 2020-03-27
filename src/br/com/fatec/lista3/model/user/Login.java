@@ -17,28 +17,77 @@
  */
 package br.com.fatec.lista3.model.user;
 
+import br.com.fatec.lista3.app.App;
 import br.com.fatec.lista3.controller.Controller;
 import br.com.fatec.lista3.controller.DataBase;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-
 public class Login {
+        private DataBase db;
 
-        public boolean verifyLogin(DataBase db) throws SQLException, NoSuchAlgorithmException {
+        public Login(DataBase db) {
+                this.db = db;
+        }
+
+        public void signIn(boolean logged) {
+                logged = verify();
+                if (logged)
+                        App.start();
+                else if (tryAgain())
+                        App.start();
+                else
+                        notLogged();
+        }
+
+        public void signUp() {
+
+        }
+
+        public boolean verify() {
                 Controller ctrl = new Controller();
                 String username = ctrl.getOption("Insira o Username: ");
                 String pass = ctrl.getOption("Insira a senha: ");
-                User to_log = new User(username, pass);
-                return verify(db, to_log);
+                User to_log = new User();
+                to_log.setUsername(username);
+                to_log.setPassword(pass);
+                return verify_pass(to_log);
         }
 
-        boolean verify(DataBase db, User user) throws SQLException, NoSuchAlgorithmException {
-                User to_comp = db.getUser(user.getUsername());
-                if (to_comp != null) {
-                        return db.decrypt(db.encrypt(user.getPassword())).equals(to_comp.getPassword());
+        boolean verify_pass(User user) {
+                User toComp = db.getUser(user.getUsername());
+                if (verify_name(toComp)) {
+                        return toComp.getPassword().equals(user.getPassword());
                 }
                 return false;
+        }
+
+        boolean verify_name(User user) {
+                return !user.getUsername().equals("");
+        }
+
+
+        public boolean tryAgain() {
+                userOrPassError();
+                boolean logged = false;
+                int attempts = 0;
+                while (attempts < 3) {
+                        logged = verify();
+                        if (logged)
+                                break;
+                        userOrPassError();
+                        attempts++;
+                }
+                return logged;
+        }
+
+        public void notLogged() {
+                System.err.println("Você errou o usuário três vezes."
+                        + "\n Tente novamente outra vez.");
+                System.exit(1);
+        }
+
+        void userOrPassError() {
+                System.err.println("\nUsuário ou senha incorretos."
+                        + "\n    Tente novamente");
         }
 
 }

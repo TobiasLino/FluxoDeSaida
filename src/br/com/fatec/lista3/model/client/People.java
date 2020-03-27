@@ -22,37 +22,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class People {
-        protected static int id;
-        protected int people_id;
         protected String name;
         protected String cpf;
         protected Phone phone;
         protected String email;
         protected Address address;
-        protected Map<String, Double> investments;
+        private String people_type;     // 'F' for Fisical and 'L' for Legal.
 
         public People() {
-                people_id = id++;
                 name = "";
                 phone = new Phone();
                 email = "";
                 address = new Address();
-                this.investments = new HashMap<>();
+                people_type = "F";
         }
 
         public abstract void print();
-
-        public void addInvestment(String investment, double value) {
-                this.investments.put(investment, value);
-        }
-
-        public void removeInvestment(String investment) {
-                this.investments.remove(investment);
-        }
-
-        public int getPeople_id() {
-                return people_id;
-        }
 
         public String getName() {
                 return name;
@@ -86,19 +71,19 @@ public abstract class People {
                 this.email = email;
         }
 
-        public Map<String, Double> getInvestments() {
-                return investments;
-        }
-
-        public void setInvestments(Map<String, Double> investments) {
-                this.investments = investments;
-        }
-
         public String getCpf() {
                 return cpf;
         }
 
         public void setCpf(String cpf) {
                 this.cpf = cpf;
+        }
+
+        public String getPeople_type() {
+                return people_type;
+        }
+
+        public void setPeople_type(String people_type) {
+                this.people_type = people_type;
         }
 }
