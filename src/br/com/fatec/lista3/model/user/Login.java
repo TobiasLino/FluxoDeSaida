@@ -43,6 +43,7 @@ public class Login {
                 User newUser = new User();
                 boolean exit = false;
                 Menu m = new Menu();
+                /*
                 while (!exit) {
                         switch (m.NewAccount()) {
                                 // Insere o nome
@@ -54,6 +55,7 @@ public class Login {
                                         }
                         }
                 }
+                 */
         }
 
         public boolean verify() {

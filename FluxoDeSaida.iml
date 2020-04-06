@@ -11,5 +11,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="com.google.firebase:firebase-admin:6.8.1" level="project" />
+    <orderEntry type="library" name="dom4j-plus-webServiceCep" level="project" />
   </component>
 </module>

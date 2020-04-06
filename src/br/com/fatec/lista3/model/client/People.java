@@ -29,6 +29,7 @@ public abstract class People {
 
         public People() {
                 name = "";
+                cpfCnpj = "";
                 phone = new Phone();
                 email = "";
                 address = new Address();
@@ -79,7 +80,8 @@ public abstract class People {
         }
 
         public void setCpfCnpj(String CPFCNPJ) {
-                if (isValid(CPFCNPJ)) this.cpfCnpj = CPFCNPJ;
+                if (!CPFCNPJ.isEmpty())
+                        if (isValid(CPFCNPJ)) this.cpfCnpj = CPFCNPJ;
         }
 
         public String getPeople_type() {

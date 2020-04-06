@@ -88,18 +88,6 @@ public class Menu {
                 return ctrl.getIntOption("Qual sua opção? : ");
         }
 
-        public int NewAccount() {
-                System.out.println("\nInsira uma das opções:\n"
-                        + "\t1. Inserir Nome.\n"
-                        + "\t2. Inserir CPF/CNPJ.\n"
-                        + "\t3. Inserir telefone.\n"
-                        + "\t4. Inserir email.\n"
-                        + "\t5. Inserir endereço.\n"
-                        + "\t6. Cancelar.\n"
-                        + "\t7. Salvar.\n");
-                return ctrl.getIntOption("Insira sua opção: ");
-        }
-
         /*
          * mainMenu::meuPerfil
          */
@@ -123,9 +111,23 @@ public class Menu {
                 }
                 System.out.println("\t3. Telefone\n"
                         + "\t4. Email\n"
-                        + "\t5. Address\n"
+                        + "\t5. Endereço\n"
                         + "\t6. Cancelar\n"
                         + "\t7. Salvar\n");
+                return ctrl.getIntOption("Insira sua opção: ");
+        }
+
+        public int editProfile_Address(User my_use) {
+                System.out.println("\nAddress\n"
+                        + "\t1. CEP\n"
+                        + "\t2. Rua\n"
+                        + "\t3. Número\n"
+                        + "\t4. Complemento\n"
+                        + "\t5. Bairro\n"
+                        + "\t6. Cidade\n"
+                        + "\t7. Estado\n"
+                        + "\t8. Cancelar\n"
+                        + "\t9. Salvar\n");
                 return ctrl.getIntOption("Insira sua opção: ");
         }
 }

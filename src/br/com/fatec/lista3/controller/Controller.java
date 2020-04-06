@@ -6,6 +6,7 @@ import br.com.fatec.lista3.model.client.Phone;
 import br.com.fatec.lista3.model.flow.Input;
 import br.com.fatec.lista3.model.user.User;
 import br.com.fatec.lista3.view.Menu;
+import org.lavieri.modelutil.cep.WebServiceCep;
 
 import java.util.Scanner;
 
@@ -102,12 +103,18 @@ public class Controller {
                                         System.err.println("\nInsira uma opção válida.");
                         }
         }
+        // Cria um novo perfil
+        public User createNewProfile() {
+                User tmp = profileInfos(new User());
+                return tmp;
+        }
         // Edita o perfil
-        void editProfile(User my_user) {
+        public void editProfile(User my_user) {
                 my_user = profileInfos(my_user);
         }
 
         User profileInfos(User my_user) {
+
                 User tmp = clone(my_user);
                 while (true) {
                         my_user.print();
@@ -127,6 +134,9 @@ public class Controller {
                                 case 4:
                                         tmp.setEmail(getOption("Insira o email: "));
                                         break;
+                                case 5:
+                                        defineAddressForUser(tmp);
+                                        break;
                                 case 6:
                                         return my_user;
                                 case 7:
@@ -135,6 +145,49 @@ public class Controller {
                                         }
                         }
                 }
+        }
+
+        /*
+         * Cadastro do endereço do usuário
+         * Contém uma busca do CEP e preenchimento
+         */
+        void defineAddressForUser(User my_user) {
+                Address tmp = clone(my_user.getAddress());
+                boolean exit = false;
+                while (!exit) {
+                        tmp.print();
+                        switch (new Menu().editProfile_Address(my_user)) {
+                                case 1 : searchCEP(tmp); break;
+                                case 2 : tmp.setStreet(getOption("Insira o endereço: ")); break;
+                                case 3 : tmp.setNumber(getOption("Insira o número: ")); break;
+                                case 4 : tmp.setComplement(getOption("Insira o complemento: ")); break;
+                                case 5 : tmp.setNeighborhood(getOption("Insira o bairro: ")); break;
+                                case 6 : tmp.setCity(getOption("Insira a cidade: ")); break;
+                                case 7 : tmp.setState(getOption("Insira a UF: ")); break;
+                                case 8 : exit = true; break;
+                                case 9 : if (confirmOption()) {
+                                        my_user.setAddress(tmp);
+                                        exit = true;
+                                        break;
+                                }
+                        }
+                }
+        }
+
+        void searchCEP(Address my_address) {
+                String cep = getOptionNotEmpty("Insira o CEP: ");
+                if (cep == null) return;
+                // Faz a busca para o cep
+                WebServiceCep webServiceCep = WebServiceCep.searchCep(cep);
+                // se a busca corresponder, insere os dados no objeto
+                if (webServiceCep.wasSuccessful()) {
+                        my_address.setZip(cep);
+                        my_address.setStreet(webServiceCep.getLogradouroFull());
+                        my_address.setNeighborhood(webServiceCep.getBairro());
+                        my_address.setCity(webServiceCep.getCidade());
+                        my_address.setState(webServiceCep.getUf());
+                }
+
         }
 
         // Métodos auxiliares para clonagem

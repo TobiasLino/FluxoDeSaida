@@ -94,7 +94,8 @@ public class Address {
         }
 
         public void setState(String state) {
-                this.state = state.substring(0,1).toUpperCase();
+                if (!state.isEmpty())
+                        this.state = state.toUpperCase();
         }
 
         public void setZip(String zip) {
