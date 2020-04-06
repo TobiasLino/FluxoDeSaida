@@ -20,6 +20,7 @@ package br.com.fatec.lista3.model.user;
 import br.com.fatec.lista3.app.App;
 import br.com.fatec.lista3.controller.Controller;
 import br.com.fatec.lista3.controller.DataBase;
+import br.com.fatec.lista3.view.Menu;
 
 public class Login {
         private DataBase db;
@@ -39,7 +40,20 @@ public class Login {
         }
 
         public void signUp() {
+                User newUser = new User();
+                boolean exit = false;
+                Menu m = new Menu();
+                while (!exit) {
+                        switch (m.NewAccount()) {
+                                // Insere o nome
+                                // Cancela
+                                case 6: exit = true; break;
+                                case 7:
+                                        if (new Controller().confirmOption()) {
 
+                                        }
+                        }
+                }
         }
 
         public boolean verify() {
@@ -78,6 +92,7 @@ public class Login {
                 }
                 return logged;
         }
+
 
         public void notLogged() {
                 System.err.println("Você errou o usuário três vezes."

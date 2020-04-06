@@ -1,18 +1,14 @@
 package br.com.fatec.lista3.model.flow;
-
-import br.com.fatec.lista3.model.client.People;
-
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Input {
-        private People people;
+        private String peopleType;
         private Map<String, Double> investments;
-        private Date date;
+        private double salary;
+        private double salesRevenue;
 
         public Input() {
-                date = new Date();                      // Data do dia corrente.
                 // Map de investimentos com o nome e valor (key e value, respectivamente.)
                 this.investments = new HashMap<>();
         }
@@ -33,19 +29,27 @@ public class Input {
                 this.investments = investments;
         }
 
-        public Date getDate() {
-                return date;
+        public double getSalary() {
+                return salary;
         }
 
-        public void setDate(Date date) {
-                this.date = date;
+        public void setSalary(double salary) {
+                this.salary = salary;
         }
 
-        public People getPeople() {
-                return people;
+        public double getSalesRevenue() {
+                return salesRevenue;
         }
 
-        public void setPeople(People people) {
-                this.people = people;
+        public void setSalesRevenue(double salesRevenue) {
+                this.salesRevenue = salesRevenue;
+        }
+
+        public String getPeopleType() {
+                return peopleType;
+        }
+
+        public void setPeopleType(String peopleType) {
+                this.peopleType = peopleType;
         }
 }

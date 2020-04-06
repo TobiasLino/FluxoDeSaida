@@ -18,6 +18,7 @@
 package br.com.fatec.lista3.view;
 
 import br.com.fatec.lista3.controller.Controller;
+import br.com.fatec.lista3.model.user.User;
 
 public class Menu {
         Controller ctrl = new Controller();
@@ -60,17 +61,71 @@ public class Menu {
         public int mainMenu() {
                 System.out.println("\nInsira uma das opções:\n"
                         + "\t1. Meu Flow\n"
-                        + "\t2. Minhas Despesas\n"
+                        + "\t2. Meu perfil.\n"
                         + "\t3. Sair.\n");
                 return ctrl.getIntOption("Qual sua opção? : ");
         }
 
-        /* Menu de Cadastro de Entrada */
-        public int registerEntry() {
-                System.out.println("\nInsira uma das opções: "
-                        + "\t1. Inserir cliente.\n"
-                        + "\t2. Inserir Data\n"
-                        + "\t3. Inserir cliente.\n");
+        /* Meu Flow */
+        public int myFlow() {
+                System.out.println("\nMeu Flow\n"
+                        + "\t1. Ver Flow.\n"
+                        + "\t2. Inserir."
+                        + "\t3. Voltar.\n");
                 return ctrl.getIntOption("Qual sua opção? : ");
+        }
+
+        /* Inserir */
+        public int newFlow() {
+                System.out.println("\nInserir\n"
+                        + "\t1. Cadastrar nova entrada.\n"
+                        + "\t2. Editar entrada.\n"
+                        + "\t3. Remover entrada.\n"
+                        + "\t4. Cadastrar nova despesa.\n"
+                        + "\t5. Editar despesas.\n"
+                        + "\t6. Remover despesas.\n"
+                        + "\t7. Voltar.\n");
+                return ctrl.getIntOption("Qual sua opção? : ");
+        }
+
+        public int NewAccount() {
+                System.out.println("\nInsira uma das opções:\n"
+                        + "\t1. Inserir Nome.\n"
+                        + "\t2. Inserir CPF/CNPJ.\n"
+                        + "\t3. Inserir telefone.\n"
+                        + "\t4. Inserir email.\n"
+                        + "\t5. Inserir endereço.\n"
+                        + "\t6. Cancelar.\n"
+                        + "\t7. Salvar.\n");
+                return ctrl.getIntOption("Insira sua opção: ");
+        }
+
+        /*
+         * mainMenu::meuPerfil
+         */
+        public int meuPerfil(User my_user) {
+                my_user.print();
+
+                System.out.println("\nSelecione uma das opções\n"
+                        + "\t1. Editar\n"
+                        + "\t2. Remover Conta\n"
+                        + "\t3. Voltar\n");
+                return ctrl.getIntOption("Insira sua opção: ");
+        }
+
+        public int editProfile(User my_user) {
+                System.out.println("\nSelecione uma opção para editar\n"
+                        + "\t1. Nome\n");
+                {
+                        if (my_user.getPeople_type().equals("F"))
+                                System.out.println("\t2. CPF\n");
+                        else System.out.println("\t2. CNPJ\n");
+                }
+                System.out.println("\t3. Telefone\n"
+                        + "\t4. Email\n"
+                        + "\t5. Address\n"
+                        + "\t6. Cancelar\n"
+                        + "\t7. Salvar\n");
+                return ctrl.getIntOption("Insira sua opção: ");
         }
 }

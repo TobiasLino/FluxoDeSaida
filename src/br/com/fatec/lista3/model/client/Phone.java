@@ -36,7 +36,7 @@ public class Phone {
         }
 
         public void setDdd(String ddd) {
-                this.ddd = ddd;
+                if (isValid(ddd)) this.ddd = ddd;
         }
 
         public String getNumber() {
@@ -44,6 +44,10 @@ public class Phone {
         }
 
         public void setNumber(String number) {
-                this.number = number;
+                if (isValid(number)) this.number = number;
+        }
+
+        boolean isValid(String value) {
+                return value.matches("[0-9]*");
         }
 }

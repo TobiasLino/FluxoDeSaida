@@ -23,54 +23,50 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.*;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class DataBase {
 
+        /*
+         * Construtor:
+         *      -> 1º busca uma chave de acesso que ta armazenada na pasta raíz do projeto,
+         *              cujo nome é .firebase ('.' por que é pra ser uma pasta oculta)
+         *      -> 2º chama um método connect().
+         */
         public DataBase() {
                 try {
                         // Chave de acesso
                         FileInputStream serviceAccount = new FileInputStream(".firebase/" +
                                 "/virtual-wallet-fatec-poo3-2020-firebase-adminsdk-esfrj-5798826318.json");
+                        // Realiza a conexão
                         connect(serviceAccount);
                 } catch (IOException e) {
                         e.printStackTrace();
                 }
         }
         /*
-         * Método que carrega o banco de dados
-         * A entrada é o caminho para o arquivo json com a serviceAcount.
+         * Inicia o firebase a partir do objeto FirebaseOptions, onde eu defino
+         *  as credenciais(arquivo .firebase), define a url do banco e construo
+         *  depois inicio com FirebaseApp.initializeApp(options);
+         * Isso faz o firebase ser carregado no projeto.
          */
         void connect(FileInputStream serviceAccount) throws IOException {
-                // Inicia o aplicativo com previlégios de admin.
                 FirebaseOptions options = new FirebaseOptions.Builder()
                         .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                         .setDatabaseUrl("https://virtual-wallet-fatec-poo3-2020.firebaseio.com")
                         .build();
                 FirebaseApp.initializeApp(options);
-
-                DatabaseReference ref = FirebaseDatabase.getInstance()
-                        .getReference("resctricted_acess/secret_document");
-                ref.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                                Object document = dataSnapshot.getValue();
-                                System.out.println(document);
-                        }
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-                        }
-                });
         }
         /*
-         * Adiciona novo usuário no firebase usando uma estrutura de map
-         * O índice será o nome de usuário.
+         * Adiciona novo usuário no firebase.
+         * users é uma referência para o campo users no banco.
+         *
+         * O map in possui chave -> username
+         *                 valor -> usuário
+         * assim, o cadastro ficará registrado por nome do usuário
          */
         public void addUser(User user) {
                 final FirebaseDatabase database = FirebaseDatabase.getInstance();

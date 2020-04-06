@@ -17,17 +17,39 @@
  */
 package br.com.fatec.lista3.model.user;
 
+import br.com.fatec.lista3.model.client.People;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class User {
+/*
+ * A classe usuário representa o usuário único que estará logado no sistema
+ */
+public class User extends People {
         private String username;
         private String password;
 
         public User() {
                 password = "";
                 username = "";
+        }
+
+        @Override
+        public void print() {
+                System.out.println("\nMeu Perfil\n"
+                        + "\tNome: " + getName() + "\n"
+                        + "\tUsername: " + getUsername() + "\n");
+                {
+                        if ("L".equals(getPeople_type()))
+                                System.out.println("\tCNPJ: " + imprimeCNPJ());
+                        else System.out.println("\tCPF: " + getCpfCnpj());
+                }
+                System.out.println("\n"
+                        + "\tPhone: " + getPhone().getNumber() + "\n"
+                        + "\tEmail: " + getEmail() + "\n");
+
+                getAddress().print();
         }
 
         public String getUsername() {

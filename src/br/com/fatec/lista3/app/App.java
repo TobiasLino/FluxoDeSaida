@@ -20,6 +20,7 @@ package br.com.fatec.lista3.app;
 import br.com.fatec.lista3.controller.Controller;
 import br.com.fatec.lista3.controller.DataBase;
 import br.com.fatec.lista3.model.user.Login;
+import br.com.fatec.lista3.model.user.User;
 import br.com.fatec.lista3.view.Menu;
 
 public class App {
@@ -28,14 +29,21 @@ public class App {
         public static DataBase db = new DataBase();
         public static Login login = new Login(db);
         public static Menu menu = new Menu();
+        public static User myUser = new User();
 
         /* Inicia o programa */
         public static void start() {
-                while (true) {
+                boolean exit = false;
+                while (!exit) {
                         switch (menu.mainMenu()) {
-                                /* Registro de entrada. */
-                                /* Sair do programa. */
-                                case 2: App.__init__();
+                                /* Meu flow */
+                                case 1: ctrl.myFlow(myUser); break;
+                                /* Meu Perfil */
+                                case 2:
+                                /* Sair */
+                                case 3:
+                                        exit = true;
+                                        break;
                         }
                 }
         }
