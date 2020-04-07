@@ -126,7 +126,7 @@ public class Menu {
                 return ctrl.getIntOption("Insira sua opção: ");
         }
 
-        public int editProfile_Address(User my_use) {
+        public int editProfile_Address() {
                 System.out.println("\nAddress\n"
                         + "\t1. CEP\n"
                         + "\t2. Rua\n"
