@@ -52,8 +52,8 @@ public class Menu {
                 System.out.println("\n\tBem Vindo.\n\n"
                         + "Insira uma das opções:\n"
                         + "\t1. Login.\n"
-                        + "\t2. Criar nova conta.\n\n"
-                        + "\t3. Sair.\t4. About\t5. Ajuda\n");
+                        + "\t2. Criar nova conta.\n"
+                        + "\t3. Sair.\n\t4. About\n\t5. Ajuda\n");
                 return ctrl.getIntOption("Qual sua opção? : ");
         }
 
@@ -103,17 +103,26 @@ public class Menu {
 
         public int editProfile(User my_user) {
                 System.out.println("\nSelecione uma opção para editar\n"
-                        + "\t1. Nome\n");
+                        + "\t1. Nome");
                 {
                         if (my_user.getPeople_type().equals("F"))
-                                System.out.println("\t2. CPF\n");
-                        else System.out.println("\t2. CNPJ\n");
+                                System.out.println("\t2. CPF");
+                        else System.out.println("\t2. CNPJ");
                 }
                 System.out.println("\t3. Telefone\n"
                         + "\t4. Email\n"
                         + "\t5. Endereço\n"
                         + "\t6. Cancelar\n"
                         + "\t7. Salvar\n");
+                return ctrl.getIntOption("Insira sua opção: ");
+        }
+
+        public int editLogin() {
+                System.out.println("\nInsira os dados de login\n"
+                        + "\t1. Inserir Username\n"
+                        + "\t2. Inserir senha\n"
+                        + "\t3. Cancelar\n"
+                        + "\t4. Salvar\n");
                 return ctrl.getIntOption("Insira sua opção: ");
         }
 

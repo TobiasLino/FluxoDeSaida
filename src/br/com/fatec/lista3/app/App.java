@@ -19,27 +19,26 @@ package br.com.fatec.lista3.app;
 
 import br.com.fatec.lista3.controller.Controller;
 import br.com.fatec.lista3.controller.DataBase;
+import br.com.fatec.lista3.controller.Status;
 import br.com.fatec.lista3.model.user.Login;
-import br.com.fatec.lista3.model.user.User;
 import br.com.fatec.lista3.view.Menu;
 
 public class App {
-        public static boolean logged = false;
         public static Controller ctrl = new Controller();
         public static DataBase db = new DataBase();
         public static Login login = new Login(db);
         public static Menu menu = new Menu();
-        public static User myUser = new User();
+        public static Status status = new Status();
 
         /* Inicia o programa */
-        public static void start() {
+        public static void __start__() {
                 boolean exit = false;
                 while (!exit) {
                         switch (menu.mainMenu()) {
                                 /* Meu flow */
-                                case 1: ctrl.myFlow(myUser); break;
+                                case 1: ctrl.myFlow(status.getUser()); break;
                                 /* Meu Perfil */
-                                case 2:
+                                case 2: ctrl.myProfile(status.getUser(), db); break;
                                 /* Sair */
                                 case 3:
                                         exit = true;
@@ -49,15 +48,21 @@ public class App {
         }
 
         public static void __init__() {
-                while (!logged) {
+                while (!status.isLogged()) {
                         switch (menu.login()) {
                                 /* Login */
                                 case 1:
-                                        login.signIn(logged);
+                                        status.setLogged(login.signIn(status.getUser()));
+                                        if (status.isLogged())
+                                                App.__start__();
+                                        else if (login.tryAgain(status.getUser()))
+                                                App.__start__();
+                                        else
+                                                login.notLogged();
                                         break;
                                 /* Criar conta */
                                 case 2:
-                                        login.signUp();
+                                        status.setUser(login.signUp());
                                         break;
                                 /* Sair do programa */
                                 case 3:

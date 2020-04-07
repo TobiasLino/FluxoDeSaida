@@ -29,25 +29,26 @@ import java.security.NoSuchAlgorithmException;
 public class User extends People {
         private String username;
         private String password;
+        private boolean isAdmin;   // verifica se é administrador
 
         public User() {
                 password = "";
                 username = "";
+                isAdmin = false;
         }
 
         @Override
         public void print() {
                 System.out.println("\nMeu Perfil\n"
                         + "\tNome: " + getName() + "\n"
-                        + "\tUsername: " + getUsername() + "\n");
+                        + "\tUsername: " + getUsername());
                 {
                         if ("L".equals(getPeople_type()))
                                 System.out.println("\tCNPJ: " + imprimeCNPJ());
                         else System.out.println("\tCPF: " + getCpfCnpj());
                 }
-                System.out.println("\n"
-                        + "\tPhone: " + getPhone().getNumber() + "\n"
-                        + "\tEmail: " + getEmail() + "\n");
+                System.out.println("\tPhone: " + getPhone().getNumber() + "\n"
+                        + "\tEmail: " + getEmail());
 
                 getAddress().print();
         }
@@ -92,5 +93,23 @@ public class User extends People {
                         hex.append((String.format("%02x", 0xFF & b)));
                 }
                 return hex.toString();
+        }
+
+        public String encodePassword(String password) {
+                try {
+                        byte[] n = encrypt(password);
+                        return decrypt(n);
+                } catch (NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+                }
+                return "";
+        }
+
+        public boolean isAdmin() {
+                return isAdmin;
+        }
+
+        public void setType(boolean type) {
+                this.isAdmin = type;
         }
 }

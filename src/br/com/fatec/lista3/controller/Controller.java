@@ -6,6 +6,7 @@ import br.com.fatec.lista3.model.client.Phone;
 import br.com.fatec.lista3.model.flow.Input;
 import br.com.fatec.lista3.model.user.User;
 import br.com.fatec.lista3.view.Menu;
+import com.google.api.client.util.Data;
 import org.lavieri.modelutil.cep.WebServiceCep;
 
 import java.util.Scanner;
@@ -92,38 +93,51 @@ public class Controller {
         /*
          * Visualiza o perfil
          */
-        public void myProfile(User my_user) {
+        public void myProfile(User my_user, DataBase db) {
                 boolean exit = false;
                 while (!exit)
                         switch (new Menu().meuPerfil(my_user)) {
-                                case 1 :
-                                case 2 :
+                                // Editar
+                                case 1 : editProfile(my_user);
+                                // Remover
+                                case 2 : eraseProfile(db);
+                                // Sair
                                 case 3 : exit = true; break;
                                 default:
                                         System.err.println("\nInsira uma opção válida.");
                         }
         }
         // Cria um novo perfil
-        public User createNewProfile() {
-                User tmp = profileInfos(new User());
-                return tmp;
+        public User createNewProfile(DataBase db) {
+                User novo = profileInfos(new User());
+                setUsernameAndPass(novo);
+                db.addUser(novo);
+                return novo;
         }
         // Edita o perfil
         public void editProfile(User my_user) {
-                my_user = profileInfos(my_user);
+                profileInfos(my_user);
         }
-
+        // Remove o perfil
+        public void eraseProfile(DataBase db) {
+                String value = getOptionNotEmpty("Digite o nome: ");
+                if (value != null)
+                        db.eraseUser(value);
+        }
         User profileInfos(User my_user) {
-
                 User tmp = clone(my_user);
                 while (true) {
-                        my_user.print();
+                        tmp.print();
                         switch (new Menu().editProfile(tmp)) {
                                 case 1:
-                                        tmp.setUsername(getOption("Insira o nome: "));
+                                        tmp.setName(getOption("Insira o nome: "));
                                         break;
                                 case 2:
-                                        tmp.setCpfCnpj(getOption("Insira o valor: "));
+                                        CpfCnpjCheck checker = new CpfCnpjCheck();
+                                        String str = getOption("Insira o valor: ");
+                                        String res = checker.isValid(str);
+                                        tmp.setPeople_type(res);
+                                        tmp.setCpfCnpj(str);
                                         break;
                                 case 3:
                                         Phone n = new Phone();
@@ -143,6 +157,8 @@ public class Controller {
                                         if (confirmOption()) {
                                                 return tmp;
                                         }
+                                default:
+                                System.out.println("\nInsira uma opção válida!");
                         }
                 }
         }
@@ -170,6 +186,31 @@ public class Controller {
                                         exit = true;
                                         break;
                                 }
+                        }
+                }
+        }
+
+        /*
+         * Cadastro do username e senha
+         */
+        public void setUsernameAndPass(User user) {
+                boolean exit = false;
+                String username, password;
+                username = password = "";
+                while (!exit) {
+                        switch (new Menu().editLogin()) {
+                                case 1: username = getOption("insira o username: "); break;
+                                case 2: password = getOption("Insira a senha: "); break;
+                                case 3:
+                                        exit = true;
+                                        break;
+                                case 4:
+                                        if (confirmOption() && (!username.equals(""))) {
+                                                user.setUsername(username);
+                                                user.setPassword(password);
+                                                exit = true;
+                                                break;
+                                        }
                         }
                 }
         }

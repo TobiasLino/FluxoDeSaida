@@ -15,21 +15,25 @@
         along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
 
  */
+
 package br.com.fatec.lista3.controller;
 import br.com.fatec.lista3.model.user.User;
+import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.firestore.*;
+import com.google.cloud.firestore.Query;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import com.google.firebase.database.*;
+import com.google.firebase.cloud.FirestoreClient;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 public class DataBase {
-
+        private Firestore db;
         /*
          * Construtor:
          *      -> 1º busca uma chave de acesso que ta armazenada na pasta raíz do projeto,
@@ -54,11 +58,12 @@ public class DataBase {
          * Isso faz o firebase ser carregado no projeto.
          */
         void connect(FileInputStream serviceAccount) throws IOException {
+                GoogleCredentials credentials = GoogleCredentials.fromStream(serviceAccount);
                 FirebaseOptions options = new FirebaseOptions.Builder()
-                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                        .setDatabaseUrl("https://virtual-wallet-fatec-poo3-2020.firebaseio.com")
+                        .setCredentials(credentials)
                         .build();
                 FirebaseApp.initializeApp(options);
+                db = FirestoreClient.getFirestore();
         }
         /*
          * Adiciona novo usuário no firebase.
@@ -69,61 +74,107 @@ public class DataBase {
          * assim, o cadastro ficará registrado por nome do usuário
          */
         public void addUser(User user) {
-                final FirebaseDatabase database = FirebaseDatabase.getInstance();
-                DatabaseReference ref = database.getReference();
-                DatabaseReference users = ref.child("users");
+                DocumentReference ref = db.collection("users").document(user.getUsername());
 
-                Map<String, User> in = new HashMap<>();
-                in.put(user.getUsername(), user);
+                Map<String, Object> in = new HashMap<>();
+                insertUserInMap(in, user);
 
-                users.setValueAsync(in);
+                ApiFuture<WriteResult> result = ref.set(in);
+                try {
+                        System.out.println("Update timer: " + result.get().getUpdateTime());
+                } catch (InterruptedException | ExecutionException e) {
+                        e.printStackTrace();
+                }
+        }
+
+        void insertUserInMap(Map<String, Object> map, User user) {
+                map.put("name", user.getName());
+                map.put("password", user.getPassword());
+                map.put("username", user.getUsername());
+                map.put("people_type", user.getPeople_type());
+                map.put("admin", user.isAdmin());
+                map.put("email", user.getEmail());
+                switch (user.getPeople_type()) {
+                        case "F": map.put("cpf", user.getCpfCnpj()); break;
+                        case "L": map.put("cnpj", user.getCpfCnpj()); break;
+                }
+                {
+                        Map<String, String> address = new HashMap<>();
+                        address.put("zip", user.getAddress().getZip());
+                        address.put("street", user.getAddress().getStreet());
+                        address.put("number", user.getAddress().getNumber());
+                        address.put("complement", user.getAddress().getComplement());
+                        address.put("neighborhood", user.getAddress().getNeighborhood());
+                        address.put("city", user.getAddress().getCity());
+                        address.put("state", user.getAddress().getState());
+                        map.put("address", address);
+                }
+                {
+                        Map<String, String> p = new HashMap<>();
+                        p.put("ddd", user.getPhone().getDdd());
+                        p.put("number", user.getPhone().getNumber());
+                        map.put("phone", p);
+                }
         }
         /*
          * Atualiza o usuário no firebase.
          * a entrada é o nick do antigo usuário, o usuário atualizado e
          * o que será atualizado, senha ou nick.
          */
-        public void updateUser(String oldUsername, User user, String what) throws NoSuchAlgorithmException {
-                final FirebaseDatabase database = FirebaseDatabase.getInstance();
-                DatabaseReference ref = database.getReference("server/savig-data/fireblog");
-                DatabaseReference users = ref.child("users");
-                DatabaseReference update = users.child(oldUsername);
+        public void updateUser(String oldUsername, User user, String what) {
 
-                Map<String, Object> in = new HashMap<>();
-                switch (what) {
-                        case "USERNAME":
-                                in.put("username", user.getUsername());
-                        case "PASSWORD":
-                                in.put("password", user.getPassword());
-                }
-
-                update.updateChildrenAsync(in);
         }
 
         /*
          * Realiza uma consulta no firebase em busca de um usuário com username fornecido
          */
         public User getUser(String username) {
-                final FirebaseDatabase database = FirebaseDatabase.getInstance();
-                DatabaseReference users = database.getReference("users");
+                CollectionReference users = db.collection("users");
+                Query query = users.whereEqualTo("username", username);
                 User user = new User();
-                users.orderByChild("users").equalTo(username).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                                insertIntoUser(user, dataSnapshot);
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                });
+                ApiFuture<QuerySnapshot> querySnapshot = query.get();
+                try {
+                        for (DocumentSnapshot document : querySnapshot.get().getDocuments())
+                                user = document.toObject(User.class);
+                } catch (InterruptedException | ExecutionException e) {
+                        e.printStackTrace();
+                }
                 return user;
         }
-        /* Insere os dados obtidos em um user */
-        void insertIntoUser(User user, DataSnapshot snapshot) {
-                user.setUsername((String) snapshot.child("username").getValue());
-                user.setPassword((String) snapshot.child("password").getValue());
+
+        /*
+         * Faz a verificação dos dados de login
+         */
+        public User checkUser(String username, String pass) {
+                User to_comp = getUser(username);
+                pass = to_comp.encodePassword(pass);
+                if (pass.equals(to_comp.getPassword())) {
+                        return to_comp;
+                }
+                return null;
         }
 
+        /*
+         * Apaga usuário do FireBase
+         * A consulta pode ser realizada name
+         * Compreendendo a regra de negócio 09.
+         */
+        public void eraseUser(String name) {
+                CollectionReference ref = db.collection("users");
+                ApiFuture<WriteResult> writeResult = ref.document(name).delete();
+                try {
+                        System.out.println("Update Time: " + writeResult.get().getUpdateTime());
+                } catch (InterruptedException | ExecutionException e) {
+                        e.printStackTrace();
+                }
+        }
+
+
+
+        /*
+         * Realiza pesquisa no banco de dados
+         */
+        public void search() {
+
+        }
 }

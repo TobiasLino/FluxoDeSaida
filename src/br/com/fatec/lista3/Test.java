@@ -1,14 +1,22 @@
 package br.com.fatec.lista3;
 
-import br.com.fatec.lista3.controller.Controller;
+import br.com.fatec.lista3.controller.DataBase;
 import br.com.fatec.lista3.model.user.User;
 
 public class Test {
         public static void main(String[] args) {
-                Controller n = new Controller();
+                User test = new User();
 
-                User test = n.createNewProfile();
+                test.setUsername("Tobalino");
+                test.setName("Tobias da Silva Lino");
+                test.getAddress().setState("SP");
+                test.getPhone().setNumber("996262526");
 
-                test.print();
+                DataBase db = new DataBase();
+                db.addUser(test);
+
+                User n = db.getUser(test.getUsername());
+
+                n.print();
         }
 }

@@ -17,10 +17,8 @@
  */
 package br.com.fatec.lista3.model.user;
 
-import br.com.fatec.lista3.app.App;
 import br.com.fatec.lista3.controller.Controller;
 import br.com.fatec.lista3.controller.DataBase;
-import br.com.fatec.lista3.view.Menu;
 
 public class Login {
         private DataBase db;
@@ -29,64 +27,31 @@ public class Login {
                 this.db = db;
         }
 
-        public void signIn(boolean logged) {
-                logged = verify();
-                if (logged)
-                        App.start();
-                else if (tryAgain())
-                        App.start();
-                else
-                        notLogged();
+        public boolean signIn(User my_user) {
+                my_user = verify();
+                return my_user != null;
         }
 
-        public void signUp() {
-                User newUser = new User();
-                boolean exit = false;
-                Menu m = new Menu();
-                /*
-                while (!exit) {
-                        switch (m.NewAccount()) {
-                                // Insere o nome
-                                // Cancela
-                                case 6: exit = true; break;
-                                case 7:
-                                        if (new Controller().confirmOption()) {
-
-                                        }
-                        }
-                }
-                 */
+        public User signUp() {
+                return new Controller().createNewProfile(db);
         }
 
-        public boolean verify() {
+        public User verify() {
                 Controller ctrl = new Controller();
                 String username = ctrl.getOption("Insira o Username: ");
                 String pass = ctrl.getOption("Insira a senha: ");
-                User to_log = new User();
-                to_log.setUsername(username);
-                to_log.setPassword(pass);
-                return verify_pass(to_log);
-        }
-
-        boolean verify_pass(User user) {
-                User toComp = db.getUser(user.getUsername());
-                if (verify_name(toComp)) {
-                        return toComp.getPassword().equals(user.getPassword());
-                }
-                return false;
-        }
-
-        boolean verify_name(User user) {
-                return !user.getUsername().equals("");
+                return db.checkUser(username, pass);
         }
 
 
-        public boolean tryAgain() {
+        public boolean tryAgain(User my_user) {
                 userOrPassError();
                 boolean logged = false;
                 int attempts = 0;
                 while (attempts < 3) {
-                        logged = verify();
+                        User n = verify();
+                        if (n != null)
+                                logged = true;
                         if (logged)
                                 break;
                         userOrPassError();
