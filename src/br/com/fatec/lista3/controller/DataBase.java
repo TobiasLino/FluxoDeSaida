@@ -17,7 +17,6 @@
  */
 package br.com.fatec.lista3.controller;
 
-import br.com.fatec.lista3.model.client.Address;
 import br.com.fatec.lista3.model.user.User;
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -35,14 +34,21 @@ import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 public class DataBase {
+        // Referência para a raíz do FireStore.
         private Firestore db;
-        /*
-         * Construtor:
-         *      -> 1º busca uma chave de acesso que ta armazenada na pasta raíz do projeto,
-         *              cujo nome é .firebase ('.' por que é pra ser uma pasta oculta)
-         *      -> 2º chama um método connect().
-         */
+
+        // Realiza a conexão com o banco.
+        // É importante que só haja uma construção de objeto, ou seja,
+        //  apenas um objeto construído será usado no programa.
         public DataBase() {
+                connect();
+        }
+        /*
+         * 1º busca uma chave de acesso que ta armazenada na pasta raíz do projeto,
+         *              cujo nome é .firebase ('.' por que é pra ser uma pasta oculta)
+         * 2º chama um método connect().
+         */
+        private void connect() {
                 try {
                         // Chave de acesso
                         FileInputStream serviceAccount = new FileInputStream(".firebase/" +
@@ -53,32 +59,43 @@ public class DataBase {
                         e.printStackTrace();
                 }
         }
+
+        /*
+         * Cria as credenciais a partir do arquivo service account e envia
+         *  para o método que carrega o firebase.
+         * Depois inicializa a variável que será referência para o FireStore.
+         */
+        private void connect(FileInputStream serviceAccount) throws IOException {
+                GoogleCredentials credentials = GoogleCredentials.fromStream(serviceAccount);
+                initializeApp(credentials);
+                db = FirestoreClient.getFirestore();
+        }
+
         /*
          * Inicia o firebase a partir do objeto FirebaseOptions, onde eu defino
          *  as credenciais(arquivo .firebase), define a url do banco e construo
          *  depois inicio com FirebaseApp.initializeApp(options);
          * Isso faz o firebase ser carregado no projeto.
          */
-        void connect(FileInputStream serviceAccount) throws IOException {
-                GoogleCredentials credentials = GoogleCredentials.fromStream(serviceAccount);
+        private void initializeApp(GoogleCredentials credentials) {
                 FirebaseOptions options = new FirebaseOptions.Builder()
                         .setCredentials(credentials)
                         .build();
                 FirebaseApp.initializeApp(options);
-                db = FirestoreClient.getFirestore();
         }
-        /*
-         * Obtém as referências para as chaves selecionadas
-         */
+
+        // Retorna a referência para uma coleção (ou pasta) especificada pela chave.
         public CollectionReference getReference(String key) {
                  return db.collection(key);
         }
+
+        // Obtém referência a um documento a partir de uma chave (que é a pasta
+        // onde está o documento) e do nome do documento.
         public DocumentReference getReference(String key, String document) {
                 return getReference(key).document(document);
         }
-        /*
-         * Imprime o tempo de consulta
-         */
+
+        // Imprime quanto tempo durou a consulta ao Banco
         public void getUpdateTime(ApiFuture<WriteResult> result) {
                 try {
                         System.out.println("Update timer: " + result.get().getUpdateTime());
@@ -86,6 +103,7 @@ public class DataBase {
                         e.printStackTrace();
                 }
         }
+
         /*
          * Adiciona novo usuário no firebase.
          * users é uma referência para o campo users no banco.
@@ -96,16 +114,13 @@ public class DataBase {
          */
         public void addUser(User user) {
                 DocumentReference ref = getReference("users", user.getUsername());
-
                 Map<String, Object> in = new HashMap<>();
                 insertUser(in, user);
-
                 ApiFuture<WriteResult> result = ref.set(in);
                 getUpdateTime(result);
         }
-        /*
-         * Insere os dados do Usuário no map
-         */
+
+        // Insere os dados do Usuário no map.
         private void insertUser(Map<String, Object> map, User user) {
                 insertMinimalInfos(map, user);
                 insertCpfOrCnpj(map, user);
@@ -143,6 +158,7 @@ public class DataBase {
                 p.put("number", user.getPhone().getNumber());
                 map.put("phone", p);
         }
+
         /*
          * Atualiza o usuário no firebase.
          * a entrada é o nick do antigo usuário, o usuário atualizado e
@@ -152,15 +168,14 @@ public class DataBase {
 
         }
 
-        /*
-         * Realiza uma consulta no firebase em busca de um usuário com username fornecido
-         */
+        // Realiza uma consulta no firebase em busca de um usuário com username fornecido.
         public User getUser(String username) {
                 CollectionReference users = getReference("users");
                 Query query = users.whereEqualTo("username", username);
                 ApiFuture<QuerySnapshot> querySnapshot = query.get();
                 return getUserFromDocument(querySnapshot);
         }
+
         private User getUserFromDocument(ApiFuture<QuerySnapshot> querySnapshot) {
                 try {
                         for (DocumentSnapshot document : querySnapshot.get().getDocuments())
@@ -177,7 +192,14 @@ public class DataBase {
         public User checkUser(String username, String pass) {
                 User to_comp = getUser(username);
                 pass = to_comp.encodePassword(pass);
-                if (pass.equals(to_comp.getPassword())) {
+                return compare(pass, to_comp);
+        }
+
+        // Compara a senha digitada enviada com a senha contida no usuário.
+        // Retorna null para um usuário inválido ou não encontrado.
+        // Importante para que as operações com o usuário retornado possam ser realizadas.
+        public User compare(String first_pass, User to_comp) {
+                if (first_pass.equals(to_comp.getPassword())) {
                         return to_comp;
                 }
                 return null;
@@ -214,18 +236,24 @@ public class DataBase {
                 }
         }
 
+        @SuppressWarnings("unchecked")
         private void printUser(DocumentSnapshot d) {
+                printName(d);
+                printCpfOrCnpj(d);
+                printContact(d);
+                printAddress((Map<String, Object>)
+                        Objects.requireNonNull(d.get("address")));
+        }
+
+        private void printName(DocumentSnapshot d) {
                 System.out.println("\nNome: " + d.get("name") + "\n"
                         + "Username: " + d.getId());
-                {
+        }
+
+        private void printCpfOrCnpj(DocumentSnapshot d) {
                 if (Objects.equals(d.get("people_type"), "L"))
-                                System.out.println("\tCNPJ: " + d.get("cnpj"));
-                        else System.out.println("\tCPF: " + d.get("cpf"));
-                }
-                System.out.println("\tPhone: "
-                        + printPhone((Map<String, Objects>) d.get("phone")) + "\n"
-                        + "\tEmail: " + d.get("email"));
-                printAddress((Map<String, Object>) d.get("address"));
+                        System.out.println("\tCNPJ: " + d.get("cnpj"));
+                else System.out.println("\tCPF: " + d.get("cpf"));
         }
 
         private void printAddress(Map<String, Object> address) {
@@ -240,7 +268,12 @@ public class DataBase {
                 );
         }
 
-        private String printPhone(Map<String, Objects> phone) {
-                return "(" + phone.get("ddd") + ") " + phone.get("number");
+        @SuppressWarnings("unchecked")
+        private void printContact(DocumentSnapshot d) {
+                Map<String, Objects> phone = (Map<String, Objects>) d.get("phone");
+                assert phone != null;
+                System.out.println("\tPhone: "
+                        + "(" + phone.get("ddd") + ") " + phone.get("number")
+                        + "\n\tEmail: " + d.get("email"));
         }
 }

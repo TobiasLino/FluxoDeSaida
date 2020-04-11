@@ -75,6 +75,14 @@ public class User extends People {
 
         }
 
+        public boolean isAdmin() {
+                return isAdmin;
+        }
+
+        public void setType(boolean type) {
+                this.isAdmin = type;
+        }
+
         /*
          * Retorna uma hash SHA-256 em formato byte[] de tamanho 32bytes.
          */
@@ -103,13 +111,5 @@ public class User extends People {
                         e.printStackTrace();
                 }
                 return "";
-        }
-
-        public boolean isAdmin() {
-                return isAdmin;
-        }
-
-        public void setType(boolean type) {
-                this.isAdmin = type;
         }
 }
