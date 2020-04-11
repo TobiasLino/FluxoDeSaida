@@ -15,8 +15,9 @@
         along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
 
  */
-
 package br.com.fatec.lista3.controller;
+
+import br.com.fatec.lista3.model.client.Address;
 import br.com.fatec.lista3.model.user.User;
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -30,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 public class DataBase {
@@ -66,6 +68,25 @@ public class DataBase {
                 db = FirestoreClient.getFirestore();
         }
         /*
+         * Obtém as referências para as chaves selecionadas
+         */
+        public CollectionReference getReference(String key) {
+                 return db.collection(key);
+        }
+        public DocumentReference getReference(String key, String document) {
+                return getReference(key).document(document);
+        }
+        /*
+         * Imprime o tempo de consulta
+         */
+        public void getUpdateTime(ApiFuture<WriteResult> result) {
+                try {
+                        System.out.println("Update timer: " + result.get().getUpdateTime());
+                } catch (InterruptedException | ExecutionException e) {
+                        e.printStackTrace();
+                }
+        }
+        /*
          * Adiciona novo usuário no firebase.
          * users é uma referência para o campo users no banco.
          *
@@ -74,47 +95,53 @@ public class DataBase {
          * assim, o cadastro ficará registrado por nome do usuário
          */
         public void addUser(User user) {
-                DocumentReference ref = db.collection("users").document(user.getUsername());
+                DocumentReference ref = getReference("users", user.getUsername());
 
                 Map<String, Object> in = new HashMap<>();
-                insertUserInMap(in, user);
+                insertUser(in, user);
 
                 ApiFuture<WriteResult> result = ref.set(in);
-                try {
-                        System.out.println("Update timer: " + result.get().getUpdateTime());
-                } catch (InterruptedException | ExecutionException e) {
-                        e.printStackTrace();
-                }
+                getUpdateTime(result);
         }
-
-        void insertUserInMap(Map<String, Object> map, User user) {
+        /*
+         * Insere os dados do Usuário no map
+         */
+        private void insertUser(Map<String, Object> map, User user) {
+                insertMinimalInfos(map, user);
+                insertCpfOrCnpj(map, user);
+                insertAddress(map, user);
+                insertPhone(map, user);
+        }
+        private void insertMinimalInfos(Map<String, Object> map, User user) {
                 map.put("name", user.getName());
                 map.put("password", user.getPassword());
                 map.put("username", user.getUsername());
                 map.put("people_type", user.getPeople_type());
                 map.put("admin", user.isAdmin());
                 map.put("email", user.getEmail());
+        }
+        private void insertCpfOrCnpj(Map<String, Object> map, User user) {
                 switch (user.getPeople_type()) {
                         case "F": map.put("cpf", user.getCpfCnpj()); break;
                         case "L": map.put("cnpj", user.getCpfCnpj()); break;
                 }
-                {
-                        Map<String, String> address = new HashMap<>();
-                        address.put("zip", user.getAddress().getZip());
-                        address.put("street", user.getAddress().getStreet());
-                        address.put("number", user.getAddress().getNumber());
-                        address.put("complement", user.getAddress().getComplement());
-                        address.put("neighborhood", user.getAddress().getNeighborhood());
-                        address.put("city", user.getAddress().getCity());
-                        address.put("state", user.getAddress().getState());
-                        map.put("address", address);
-                }
-                {
-                        Map<String, String> p = new HashMap<>();
-                        p.put("ddd", user.getPhone().getDdd());
-                        p.put("number", user.getPhone().getNumber());
-                        map.put("phone", p);
-                }
+        }
+        private void insertAddress(Map<String, Object> map, User user) {
+                Map<String, String> address = new HashMap<>();
+                address.put("zip", user.getAddress().getZip());
+                address.put("street", user.getAddress().getStreet());
+                address.put("number", user.getAddress().getNumber());
+                address.put("complement", user.getAddress().getComplement());
+                address.put("neighborhood", user.getAddress().getNeighborhood());
+                address.put("city", user.getAddress().getCity());
+                address.put("state", user.getAddress().getState());
+                map.put("address", address);
+        }
+        private void insertPhone(Map<String, Object> map, User user) {
+                Map<String, String> p = new HashMap<>();
+                p.put("ddd", user.getPhone().getDdd());
+                p.put("number", user.getPhone().getNumber());
+                map.put("phone", p);
         }
         /*
          * Atualiza o usuário no firebase.
@@ -129,17 +156,19 @@ public class DataBase {
          * Realiza uma consulta no firebase em busca de um usuário com username fornecido
          */
         public User getUser(String username) {
-                CollectionReference users = db.collection("users");
+                CollectionReference users = getReference("users");
                 Query query = users.whereEqualTo("username", username);
-                User user = new User();
                 ApiFuture<QuerySnapshot> querySnapshot = query.get();
+                return getUserFromDocument(querySnapshot);
+        }
+        private User getUserFromDocument(ApiFuture<QuerySnapshot> querySnapshot) {
                 try {
                         for (DocumentSnapshot document : querySnapshot.get().getDocuments())
-                                user = document.toObject(User.class);
+                                return document.toObject(User.class);
                 } catch (InterruptedException | ExecutionException e) {
                         e.printStackTrace();
                 }
-                return user;
+                return null;
         }
 
         /*
@@ -162,19 +191,56 @@ public class DataBase {
         public void eraseUser(String name) {
                 CollectionReference ref = db.collection("users");
                 ApiFuture<WriteResult> writeResult = ref.document(name).delete();
+                getUpdateTime(writeResult);
+        }
+
+        /*
+         * Realiza pesquisa no banco de dados
+         */
+        public void search(String local, String key, String value) {
+                CollectionReference ref = getReference(local);
+                Query query = ref.whereEqualTo(key, value);
+                ApiFuture<QuerySnapshot> querySnapshot = query.get();
+                printResult(querySnapshot);
+        }
+
+        private void printResult(ApiFuture<QuerySnapshot> querySnapshot) {
                 try {
-                        System.out.println("Update Time: " + writeResult.get().getUpdateTime());
+                        for (DocumentSnapshot d : querySnapshot.get().getDocuments()) {
+                                printUser(d);
+                        }
                 } catch (InterruptedException | ExecutionException e) {
                         e.printStackTrace();
                 }
         }
 
+        private void printUser(DocumentSnapshot d) {
+                System.out.println("\nNome: " + d.get("name") + "\n"
+                        + "Username: " + d.getId());
+                {
+                if (Objects.equals(d.get("people_type"), "L"))
+                                System.out.println("\tCNPJ: " + d.get("cnpj"));
+                        else System.out.println("\tCPF: " + d.get("cpf"));
+                }
+                System.out.println("\tPhone: "
+                        + printPhone((Map<String, Objects>) d.get("phone")) + "\n"
+                        + "\tEmail: " + d.get("email"));
+                printAddress((Map<String, Object>) d.get("address"));
+        }
 
+        private void printAddress(Map<String, Object> address) {
+                System.out.println("\tEndereço\n"
+                        + "\t\tRua:         " + address.get("street") + "\n"
+                        + "\t\tNúmero:      " + address.get("number") + "\n"
+                        + "\t\tComplemento: " + address.get("complement") + "\n"
+                        + "\t\tBairro:      " + address.get("neighborhood") + "\n"
+                        + "\t\tCidade:      " + address.get("city") + "\n"
+                        + "\t\tEstado:      " + address.get("state") + "\n"
+                        + "\t\tCEP:         " + address.get("zip")
+                );
+        }
 
-        /*
-         * Realiza pesquisa no banco de dados
-         */
-        public void search() {
-
+        private String printPhone(Map<String, Objects> phone) {
+                return "(" + phone.get("ddd") + ") " + phone.get("number");
         }
 }

@@ -43,7 +43,7 @@ public class User extends People {
                         + "\tNome: " + getName() + "\n"
                         + "\tUsername: " + getUsername());
                 {
-                        if ("L".equals(getPeople_type()))
+                        if (getPeople_type().equals("L"))
                                 System.out.println("\tCNPJ: " + imprimeCNPJ());
                         else System.out.println("\tCPF: " + getCpfCnpj());
                 }
