@@ -93,7 +93,6 @@ public class Menu {
          */
         public int meuPerfil(User my_user) {
                 my_user.print();
-
                 System.out.println("\nSelecione uma das opções\n"
                         + "\t1. Editar\n"
                         + "\t2. Remover Conta\n"
