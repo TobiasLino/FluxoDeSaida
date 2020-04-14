@@ -1,7 +1,26 @@
+/*
+        This file is part of FluxoDeSaida.
+
+        FluxoDeSaida is free software: you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation, either version 3 of the License, or
+        (at your option) any later version.
+
+        FluxoDeSaida is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
+
+        You should have received a copy of the GNU General Public License
+        along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package br.com.fatec.lista3.controller;
 
 import br.com.fatec.lista3.model.client.Phone;
+import br.com.fatec.lista3.model.flow.Fisical;
 import br.com.fatec.lista3.model.flow.Input;
+import br.com.fatec.lista3.model.flow.Legal;
 import br.com.fatec.lista3.model.user.User;
 import br.com.fatec.lista3.view.Menu;
 
@@ -24,13 +43,20 @@ public class Controller{
                 }
         }
 
-        void newInput(User user) {
-                Input in = new Input();
-                editInput(in);
+        /*
+         * Define o tipo de entradas que serão aceitas pelo sistema.
+         * É verificado a partir do people_type do User e cria o
+         * objeto correspondente.
+         */
+        public void newInput(Status st) {
+                switch (st.getUser().getPeople_type()) {
+                        case "L": st.input = new Legal(st.getUser()); break;
+                        case "F": st.input = new Fisical(st.getUser()); break;
+                }
         }
 
-        void editInput(Input input) {
-                Input tmp = new Input();
+        private void editInput(Input input) {
+                Input tmp = new Input(input.getUser());
                 boolean exit = false;
                 while (!exit) {
                         switch (new Menu().newFlow()) {

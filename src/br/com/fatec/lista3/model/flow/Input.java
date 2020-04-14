@@ -1,16 +1,46 @@
+/*
+        This file is part of FluxoDeSaida.
+
+        FluxoDeSaida is free software: you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation, either version 3 of the License, or
+        (at your option) any later version.
+
+        FluxoDeSaida is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
+
+        You should have received a copy of the GNU General Public License
+        along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package br.com.fatec.lista3.model.flow;
+
+import br.com.fatec.lista3.model.user.User;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class Input {
-        private String peopleType;
+        private User user;
         private Map<String, Double> investments;
-        private double salary;
-        private double salesRevenue;
 
-        public Input() {
+        public Input(User user) {
                 // Map de investimentos com o nome e valor (key e value, respectivamente.)
                 this.investments = new HashMap<>();
+                this.user = user;
+        }
+
+        public Double sumOfInvestments() {
+                Double count = 0.0;
+                for (Double n : investments.values())
+                        count += n;
+                return count;
+        }
+
+        public void print() {
+                investments.forEach((key, value) -> System.out.println("\t" + key + ": " + value));
         }
 
         public void addInvestment(String investment, double value) {
@@ -29,27 +59,11 @@ public class Input {
                 this.investments = investments;
         }
 
-        public double getSalary() {
-                return salary;
+        public User getUser() {
+                return user;
         }
 
-        public void setSalary(double salary) {
-                this.salary = salary;
-        }
-
-        public double getSalesRevenue() {
-                return salesRevenue;
-        }
-
-        public void setSalesRevenue(double salesRevenue) {
-                this.salesRevenue = salesRevenue;
-        }
-
-        public String getPeopleType() {
-                return peopleType;
-        }
-
-        public void setPeopleType(String peopleType) {
-                this.peopleType = peopleType;
+        public void setUser(User user) {
+                this.user = user;
         }
 }
