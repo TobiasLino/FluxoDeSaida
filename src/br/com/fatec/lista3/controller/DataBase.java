@@ -17,6 +17,10 @@
  */
 package br.com.fatec.lista3.controller;
 
+import br.com.fatec.lista3.model.flow.Expenses;
+import br.com.fatec.lista3.model.flow.Fisical;
+import br.com.fatec.lista3.model.flow.Input;
+import br.com.fatec.lista3.model.flow.Legal;
 import br.com.fatec.lista3.model.user.User;
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -275,5 +279,68 @@ public class DataBase {
                 System.out.println("\tPhone: "
                         + "(" + phone.get("ddd") + ") " + phone.get("number")
                         + "\n\tEmail: " + d.get("email"));
+        }
+
+        /*
+         * Método que adiciona uma Input no FireStore
+         * A inserção é realizada da mesma forma que com os dados do usuário:
+         *  criando um map e inserindo nele os dados da classe.
+         *      É importante que o map tenha chave String e valor Object, para
+         *      não ocorrer erros ao inserir mapas dentro de mapas.
+         * Assim, podemos escrever (set(map)) dentro do documento que referenciamos
+         * em ref.
+         * Por fim, o método imprime o tempo de atualização.
+         */
+        public void addInput(Status status) {
+                DocumentReference ref = getReference("inputs",
+                        status.getInput().getUser().getUsername());
+                Map<String, Object> in = addInputInfos(status);
+                ApiFuture<WriteResult> result = ref.set(in);
+                getUpdateTime(result);
+        }
+        // Adiciona as informações comuns para classes do tipo input e
+        // retorna um map com todos os dados.
+        private Map<String, Object> addInputInfos(Status status) {
+                Map<String, Object> in = new HashMap<>();
+                in.put("name", status.getUser().getName());
+                in.put("investments", addInvestments(status.getInput()));
+                addIncome(in, status);
+                return in;
+        }
+        // Adiciona os investimentos, comuns as classes Input
+        private Map<String, Object> addInvestments(Input input) {
+                Map<String, Object> investments = new HashMap<>();
+                input.getInvestments().forEach(investments::put);
+                return investments;
+        }
+        // Seleciona qual a opção adequada para inserir os dados do Input
+        //  de acordo com peopleType do User em status.
+        private void addIncome(Map<String, Object> map, Status status) {
+                switch (status.getUser().getPeople_type()) {
+                        case "F" : addIncome(map, (Fisical) status.getInput());
+                        case "L" : addIncome(map, (Legal) status.getInput());
+                }
+        }
+        // Insere os dados comuns as classes Fisical
+        // Já insere as expenses no fim.
+        private void addIncome(Map<String, Object> map, Fisical fisical) {
+                map.put("salary", fisical.getSalary());
+                map.put("balance", fisical.getBalance());
+                map.put("total", fisical.getTotal());
+                map.put("expenses", addExpenses(fisical.getExpenses()));
+        }
+        // Insere os dados comuns as classes Legal
+        // Já insere as expenses no fim.
+        private void addIncome(Map<String, Object> map, Legal legal) {
+                map.put("salesRevenue", legal.getSalesRevenue());
+                map.put("balance", legal.getBalance());
+                map.put("total", legal.getTotal());
+                map.put("expenses", addExpenses(legal.getExpenses()));
+        }
+        // Retorna um map com todas as despesas.
+        private Map<String, Object> addExpenses(Expenses expenses) {
+                Map<String, Object> map = new HashMap<>();
+                expenses.getExpenses().forEach(map::put);
+                return map;
         }
 }
