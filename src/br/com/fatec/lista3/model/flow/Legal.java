@@ -22,7 +22,8 @@ import br.com.fatec.lista3.model.user.User;
 public class Legal extends Input {
         private double salesRevenue;
         private Expenses expenses;
-        // -1 caso esteja negativo, 0 se gastar todo o salário e 1 se sobrar dinheiro
+        // -1 caso esteja negativo, 0 se as despesas forem iguais ao valor da
+        // receita + investimentos e 1 se sobrar dinheiro
         private int balance;
         // total subtraindo o salário + investimentos das despesas.
         private Double total;

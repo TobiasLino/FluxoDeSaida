@@ -20,7 +20,9 @@ package br.com.fatec.lista3.controller;
 
 import br.com.fatec.lista3.model.client.Address;
 import br.com.fatec.lista3.model.client.Phone;
+import br.com.fatec.lista3.model.flow.Fisical;
 import br.com.fatec.lista3.model.flow.Input;
+import br.com.fatec.lista3.model.flow.Legal;
 import br.com.fatec.lista3.model.user.User;
 import br.com.fatec.lista3.view.Menu;
 import com.google.api.client.util.Data;
@@ -82,12 +84,19 @@ public class Controller {
                 }
         }
 
-        void newInput(User user) {
-                Input in = new Input(user);
-                editInput(in);
+        /*
+         * Define o tipo de entradas que serão aceitas pelo sistema.
+         * É verificado a partir do people_type do User e cria o
+         * objeto correspondente.
+         */
+        public void newInput(Status st) {
+                switch (st.getUser().getPeople_type()) {
+                        case "L": st.setInput(new Legal(st.getUser())); break;
+                        case "F": st.setInput(new Fisical(st.getUser())); break;
+                }
         }
 
-        void editInput(Input input) {
+        private void editInput(Input input) {
                 Input tmp = new Input(input.getUser());
                 boolean exit = false;
                 while (!exit) {
