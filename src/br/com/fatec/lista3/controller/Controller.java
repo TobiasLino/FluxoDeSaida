@@ -91,8 +91,8 @@ public class Controller {
          */
         public void newInput(Status st) {
                 switch (st.getUser().getPeople_type()) {
-                        case "L": st.setInput(new Legal(st.getUser())); break;
-                        case "F": st.setInput(new Fisical(st.getUser())); break;
+                        case "L": st.input = new Legal(st.getUser()); break;
+                        case "F": st.input = new Fisical(st.getUser()); break;
                 }
         }
 

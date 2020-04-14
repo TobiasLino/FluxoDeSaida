@@ -7,7 +7,7 @@ public class Status {
         private boolean logged;
         private User user;
         private boolean adminStatus;
-        private Input input;
+        public Input input;
 
         public Status() {
                 this.input = null;
@@ -38,13 +38,5 @@ public class Status {
 
         public void setAdminStatus(boolean adminStatus) {
                 this.adminStatus = adminStatus;
-        }
-
-        public Input getInput() {
-                return input;
-        }
-
-        public void setInput(Input input) {
-                this.input = input;
         }
 }

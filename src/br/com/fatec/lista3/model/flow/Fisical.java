@@ -50,6 +50,7 @@ public class Fisical extends Input {
         }
 
         public int getBalance() {
+                setTotal();
                 situation(total);
                 return balance;
         }

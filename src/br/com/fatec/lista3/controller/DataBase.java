@@ -29,6 +29,7 @@ import com.google.cloud.firestore.Query;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
+import org.dom4j.Document;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -227,60 +228,48 @@ public class DataBase {
                 CollectionReference ref = getReference(local);
                 Query query = ref.whereEqualTo(key, value);
                 ApiFuture<QuerySnapshot> querySnapshot = query.get();
-                printResult(querySnapshot);
+                print(querySnapshot);
         }
 
-        private void printResult(ApiFuture<QuerySnapshot> querySnapshot) {
+        private void print(ApiFuture<QuerySnapshot> querySnapshot) {
                 try {
                         for (DocumentSnapshot d : querySnapshot.get().getDocuments()) {
-                                printUser(d);
+                                print(d);
                         }
                 } catch (InterruptedException | ExecutionException e) {
                         e.printStackTrace();
                 }
         }
-
         @SuppressWarnings("unchecked")
-        private void printUser(DocumentSnapshot d) {
-                printName(d);
-                printCpfOrCnpj(d);
-                printContact(d);
-                printAddress((Map<String, Object>)
-                        Objects.requireNonNull(d.get("address")));
+        private void print(DocumentSnapshot d) {
+                Map<String, Object> map = d.getData();
+                assert map != null;
+                map.forEach((key, value) -> {
+                        if (!hidePass(key)) {
+                                print(key, value);
+                        }
+                });
         }
 
-        private void printName(DocumentSnapshot d) {
-                System.out.println("\nNome: " + d.get("name") + "\n"
-                        + "Username: " + d.getId());
+        private boolean hidePass(String key) {
+                return key.equals("password");
         }
 
-        private void printCpfOrCnpj(DocumentSnapshot d) {
-                if (Objects.equals(d.get("people_type"), "L"))
-                        System.out.println("\tCNPJ: " + d.get("cnpj"));
-                else System.out.println("\tCPF: " + d.get("cpf"));
-        }
-
-        private void printAddress(Map<String, Object> address) {
-                System.out.println("\tEndereço\n"
-                        + "\t\tRua:         " + address.get("street") + "\n"
-                        + "\t\tNúmero:      " + address.get("number") + "\n"
-                        + "\t\tComplemento: " + address.get("complement") + "\n"
-                        + "\t\tBairro:      " + address.get("neighborhood") + "\n"
-                        + "\t\tCidade:      " + address.get("city") + "\n"
-                        + "\t\tEstado:      " + address.get("state") + "\n"
-                        + "\t\tCEP:         " + address.get("zip")
-                );
+        private void print(String key, Object value) {
+                if (value instanceof Map) {
+                        print(key, value, (Map) value);
+                } else {
+                        System.out.println("\t" + key + ": " + value);
+                }
         }
 
         @SuppressWarnings("unchecked")
-        private void printContact(DocumentSnapshot d) {
-                Map<String, Objects> phone = (Map<String, Objects>) d.get("phone");
-                assert phone != null;
-                System.out.println("\tPhone: "
-                        + "(" + phone.get("ddd") + ") " + phone.get("number")
-                        + "\n\tEmail: " + d.get("email"));
+        private void print(String key, Object value, Map<String, Object> v) {
+                System.out.println("\t" + key);
+                ((Map) v).forEach((key2, value2) -> {
+                        System.out.println("\t\t" + key2 + ": " + value2);
+                });
         }
-
         /*
          * Método que adiciona uma Input no FireStore
          * A inserção é realizada da mesma forma que com os dados do usuário:
@@ -293,7 +282,7 @@ public class DataBase {
          */
         public void addInput(Status status) {
                 DocumentReference ref = getReference("inputs",
-                        status.getInput().getUser().getUsername());
+                        status.input.getUser().getUsername());
                 Map<String, Object> in = addInputInfos(status);
                 ApiFuture<WriteResult> result = ref.set(in);
                 getUpdateTime(result);
@@ -302,8 +291,8 @@ public class DataBase {
         // retorna um map com todos os dados.
         private Map<String, Object> addInputInfos(Status status) {
                 Map<String, Object> in = new HashMap<>();
-                in.put("name", status.getUser().getName());
-                in.put("investments", addInvestments(status.getInput()));
+                in.put("name", status.getUser().getUsername());
+                in.put("investments", addInvestments(status.input));
                 addIncome(in, status);
                 return in;
         }
@@ -317,8 +306,8 @@ public class DataBase {
         //  de acordo com peopleType do User em status.
         private void addIncome(Map<String, Object> map, Status status) {
                 switch (status.getUser().getPeople_type()) {
-                        case "F" : addIncome(map, (Fisical) status.getInput());
-                        case "L" : addIncome(map, (Legal) status.getInput());
+                        case "F" : addIncome(map, (Fisical) status.input); break;
+                        case "L" : addIncome(map, (Legal) status.input); break;
                 }
         }
         // Insere os dados comuns as classes Fisical
@@ -343,4 +332,8 @@ public class DataBase {
                 expenses.getExpenses().forEach(map::put);
                 return map;
         }
+
+        /*
+         * Método que retorna uma input de acordo com os dados do usuário.
+         */
 }

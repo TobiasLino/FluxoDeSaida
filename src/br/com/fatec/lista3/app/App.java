@@ -28,7 +28,7 @@ public class App {
         public static DataBase db = new DataBase();
         public static Login login = new Login(db);
         public static Menu menu = new Menu();
-        public static Status status = new Status(input);
+        public static Status status = new Status();
 
         /* Inicia o programa */
         public static void __start__() {
