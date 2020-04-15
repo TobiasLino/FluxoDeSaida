@@ -77,7 +77,7 @@ public class Controller {
                 while (!exit) {
                         switch (new Menu().myFlow()) {
                                 case 1: seeMyFlow(db, status); break;
-                                case 2:
+                                case 2: insertToFlow(db, status);
                                 case 3: exit = true; break;
                                 default:
                                         System.err.println("\nInsira uma opção válida.\n");
@@ -87,13 +87,12 @@ public class Controller {
         void seeMyFlow(DataBase db, Status status) {
                 db.search("input", "name", status.getUser().getUsername());
         }
-
         private void insertToFlow(DataBase db, Status status) {
                 status.input = db.findInput(status.getUser());
                 boolean exit = false;
                 while (!exit) {
                         switch (new Menu().newFlow()) {
-                                case 1:
+                                case 1: newInput(status);
                                         break;
                                 case 2:
                                         break;
@@ -103,18 +102,30 @@ public class Controller {
                         }
                 }
         }
-
         /*
          * Define o tipo de entradas que serão aceitas pelo sistema.
          * É verificado a partir do people_type do User e cria o
          * objeto correspondente.
          */
-        public void newInput(Status st) {
+        private void newInput(Status st) {
                 switch (st.getUser().getPeople_type()) {
-                        case "L": st.input = new Legal(st.getUser()); break;
-                        case "F": st.input = new Fisical(st.getUser()); break;
+                        case "L":
+                                st.input = new Legal(st.getUser());
+                                newInput((Legal) st.input);
+                                break;
+                        case "F":
+                                st.input = new Fisical(st.getUser());
+                                newInput((Fisical) st.input);
+                                break;
                 }
         }
+        private void newInput(Fisical input) {
+
+        }
+        private void newInput(Legal legal) {
+
+        }
+
 
 
         /*

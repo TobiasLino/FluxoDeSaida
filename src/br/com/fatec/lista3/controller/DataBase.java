@@ -238,9 +238,8 @@ public class DataBase {
         // Retorna null para um usuário inválido ou não encontrado.
         // Importante para que as operações com o usuário retornado possam ser realizadas.
         public User compare(String first_pass, User to_comp) {
-                if (first_pass.equals(to_comp.getPassword())) {
+                if (first_pass.equals(to_comp.getPassword()))
                         return to_comp;
-                }
                 return null;
         }
 
