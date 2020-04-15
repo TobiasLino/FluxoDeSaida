@@ -36,7 +36,7 @@ public class App {
                 while (!exit) {
                         switch (menu.mainMenu()) {
                                 /* Meu flow */
-                                case 1: ctrl.myFlow(status.getUser()); break;
+                                case 1: ctrl.myFlow(db, status); break;
                                 /* Meu Perfil */
                                 case 2: ctrl.myProfile(status.getUser(), db); break;
                                 /* Sair */

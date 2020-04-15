@@ -29,13 +29,11 @@ import com.google.cloud.firestore.Query;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
-import org.dom4j.Document;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 public class DataBase {
@@ -164,6 +162,7 @@ public class DataBase {
                 map.put("phone", p);
         }
 
+
         /*
          * Atualiza o usuário no firebase.
          * a entrada é o nick do antigo usuário, o usuário atualizado e
@@ -173,6 +172,7 @@ public class DataBase {
 
         }
 
+
         // Realiza uma consulta no firebase em busca de um usuário com username fornecido.
         public User getUser(String username) {
                 CollectionReference users = getReference("users");
@@ -180,7 +180,6 @@ public class DataBase {
                 ApiFuture<QuerySnapshot> querySnapshot = query.get();
                 return getUserFromDocument(querySnapshot);
         }
-
         private User getUserFromDocument(ApiFuture<QuerySnapshot> querySnapshot) {
                 try {
                         for (DocumentSnapshot document : querySnapshot.get().getDocuments())
@@ -191,15 +190,50 @@ public class DataBase {
                 return null;
         }
 
+
+        // Retorna uma Input cujo conteúdo contenha nome que seja o meso que o username do usuário
+        //  fornecido.
+        public Input findInput(User user) {
+                Input nova;
+                switch (user.getPeople_type()) {
+                        case "F": nova = new Fisical(user); break;
+                        case "L": nova = new Legal(user); break;
+                        default:
+                                throw new IllegalStateException("Unexpected value: "
+                                        + user.getPeople_type());
+                }
+                return findInput(nova, user, user.getPeople_type());
+        }
+        private Input findInput(Input input, User user, String type) {
+                CollectionReference ref = getReference("inputs");
+                Query query = ref.whereEqualTo("name", user.getUsername());
+                ApiFuture<QuerySnapshot> querySnapshot = query.get();
+                return getInputFromDocument(querySnapshot, type);
+        }
+        private Input getInputFromDocument(ApiFuture<QuerySnapshot> querySnapshot, String type) {
+                try {
+                        for (DocumentSnapshot document : querySnapshot.get().getDocuments())
+                                switch (type) {
+                                        case "F": return document.toObject(Fisical.class);
+                                        case "L": return document.toObject(Legal.class);
+                                }
+                } catch (InterruptedException | ExecutionException e) {
+                        e.printStackTrace();
+                }
+                return null;
+        }
+
+
         /*
-         * Faz a verificação dos dados de login
+         * Faz a verificação dos dados de login através de um username e password
+         *  fornecidos.
+         * Retorna o usuário cuja senha e username batam com os fornecidos.
          */
         public User checkUser(String username, String pass) {
                 User to_comp = getUser(username);
                 pass = to_comp.encodePassword(pass);
                 return compare(pass, to_comp);
         }
-
         // Compara a senha digitada enviada com a senha contida no usuário.
         // Retorna null para um usuário inválido ou não encontrado.
         // Importante para que as operações com o usuário retornado possam ser realizadas.
@@ -209,6 +243,7 @@ public class DataBase {
                 }
                 return null;
         }
+
 
         /*
          * Apaga usuário do FireBase
@@ -221,8 +256,15 @@ public class DataBase {
                 getUpdateTime(writeResult);
         }
 
+
         /*
-         * Realiza pesquisa no banco de dados
+         * Permite realizar qualquer tipo de pesquisa no banco de dados onde as entradas são,
+         *  respectivamente, o local onde os dados estão (exemplo: users), o campo que será
+         *  usado como parâmetro de comparação (por exemplo, para se buscar um user pelo nome
+         *  o campo será: "name", porém para buscar pelo cpf o campo será: "cpf") e o valor a
+         *  ser buscado (no caso de pesquisa por "name", o valor é o nome desejado).
+         * Esse método não retorna um objeto do tipo encontrado, mas apenas realiza a consulta
+         *  e imprime as informações na tela.
          */
         public void search(String local, String key, String value) {
                 CollectionReference ref = getReference(local);
@@ -230,7 +272,7 @@ public class DataBase {
                 ApiFuture<QuerySnapshot> querySnapshot = query.get();
                 print(querySnapshot);
         }
-
+        // Imprime os dados obtidos na query.
         private void print(ApiFuture<QuerySnapshot> querySnapshot) {
                 try {
                         for (DocumentSnapshot d : querySnapshot.get().getDocuments()) {
@@ -240,38 +282,38 @@ public class DataBase {
                         e.printStackTrace();
                 }
         }
-        @SuppressWarnings("unchecked")
+        // Imprime os dados encontrados no documento, evitando a impressão da senha caso o documento
+        //  seja do tipo User.
         private void print(DocumentSnapshot d) {
                 Map<String, Object> map = d.getData();
                 assert map != null;
                 map.forEach((key, value) -> {
-                        if (!hidePass(key)) {
-                                print(key, value);
-                        }
+                        if (!hidePass(key)) print(key, value);
                 });
         }
-
+        // Omite a informação da senha ao imprimir os dados do usuário
         private boolean hidePass(String key) {
                 return key.equals("password");
         }
-
+        // imprime, dentro de um forEach, os dados contidos na key e value do map
         private void print(String key, Object value) {
-                if (value instanceof Map) {
+                if (value instanceof Map)
                         print(key, value, (Map) value);
-                } else {
+                else
                         System.out.println("\t" + key + ": " + value);
-                }
         }
-
-        @SuppressWarnings("unchecked")
+        // imprime os dados caso haja um map dentro de outro map. (nesse caso o map será
+        //  sempre o value).
         private void print(String key, Object value, Map<String, Object> v) {
                 System.out.println("\t" + key);
-                ((Map) v).forEach((key2, value2) -> {
+                v.forEach((key2, value2) -> {
                         System.out.println("\t\t" + key2 + ": " + value2);
                 });
         }
+
+
         /*
-         * Método que adiciona uma Input no FireStore
+         * Adiciona uma Input no FireStore
          * A inserção é realizada da mesma forma que com os dados do usuário:
          *  criando um map e inserindo nele os dados da classe.
          *      É importante que o map tenha chave String e valor Object, para
@@ -333,7 +375,5 @@ public class DataBase {
                 return map;
         }
 
-        /*
-         * Método que retorna uma input de acordo com os dados do usuário.
-         */
+
 }

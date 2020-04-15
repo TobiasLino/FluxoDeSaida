@@ -26,6 +26,7 @@ import br.com.fatec.lista3.model.flow.Legal;
 import br.com.fatec.lista3.model.user.User;
 import br.com.fatec.lista3.view.Menu;
 import com.google.api.client.util.Data;
+import com.google.api.client.util.DateTime;
 import org.lavieri.modelutil.cep.WebServiceCep;
 
 import java.util.Scanner;
@@ -71,15 +72,34 @@ public class Controller {
         /* ******************************************************** *
          * Operações dos menus                                      *
          * ******************************************************** */
-        public void myFlow(User user) {
+        public void myFlow(DataBase db, Status status) {
                 boolean exit = false;
                 while (!exit) {
                         switch (new Menu().myFlow()) {
-                                case 1:
+                                case 1: seeMyFlow(db, status); break;
                                 case 2:
                                 case 3: exit = true; break;
                                 default:
                                         System.err.println("\nInsira uma opção válida.\n");
+                        }
+                }
+        }
+        void seeMyFlow(DataBase db, Status status) {
+                db.search("input", "name", status.getUser().getUsername());
+        }
+
+        private void insertToFlow(DataBase db, Status status) {
+                status.input = db.findInput(status.getUser());
+                boolean exit = false;
+                while (!exit) {
+                        switch (new Menu().newFlow()) {
+                                case 1:
+                                        break;
+                                case 2:
+                                        break;
+                                case 3:
+                                        break;
+                                case 7: exit = true; break;
                         }
                 }
         }
@@ -96,25 +116,6 @@ public class Controller {
                 }
         }
 
-        private void editInput(Input input) {
-                Input tmp = new Input(input.getUser());
-                boolean exit = false;
-                while (!exit) {
-                        switch (new Menu().newFlow()) {
-                                case 1:
-                                        break;
-                                case 2:
-                                        break;
-                                case 3:
-                                        break;
-                                case 4: exit = true; break;
-                        }
-                }
-        }
-
-        void seeMyFlow() {
-                
-        }
 
         /*
          * Visualiza o perfil
