@@ -1,13 +1,54 @@
 package br.com.fatec.lista3.controller;
 
+
+import br.com.fatec.lista3.model.client.Address;
 import br.com.fatec.lista3.model.client.Phone;
 import br.com.fatec.lista3.model.flow.Input;
 import br.com.fatec.lista3.model.user.User;
 import br.com.fatec.lista3.view.Menu;
+import com.google.api.client.util.Data;
+import org.lavieri.modelutil.cep.WebServiceCep;
 
-public class Controller{
-        private Insertion insert = new Insertion();
-        private Clone clone = new Clone();
+import java.util.Scanner;
+
+public class Controller {
+        private Scanner scan = new Scanner(System.in);
+        // getOption retorna a opção do usuário mediante uma mensagem.
+        /* getOption sem verificação de string vazia */
+        public String getOption(String message) {
+                System.out.print(message);
+                return scan.nextLine();
+        }
+        /* getOption com verificação de string vazia */
+        public String getOptionNotEmpty(String message) {
+                System.out.print(message);
+                String opt = scan.nextLine();
+                if (!opt.equals(""))
+                        return opt;
+                return null;
+        }
+
+        /* getOption com retorno em int */
+        public int getIntOption(String message) {
+                System.out.print(message);
+                String to_int = scan.nextLine();
+                int ret = 0;
+                if (!to_int.isEmpty() && canBeInt(to_int))
+                        ret = Integer.parseInt(to_int);
+                return ret;
+        }
+
+        /* Verifica se uma string contém apenas números */
+        public boolean canBeInt(String str) {
+                return str.matches("[0-9]*");
+        }
+
+        /* Retorna true se o cliente confirmar a operação */
+        public boolean confirmOption() {
+                String opt = getOption("Confirmar ? [S/n] : ");
+                return opt.equals("") || opt.equals("S") || opt.equals("s");
+        }
+
         /* ******************************************************** *
          * Operações dos menus                                      *
          * ******************************************************** */
@@ -79,33 +120,33 @@ public class Controller{
         }
         // Remove o perfil
         public void eraseProfile(DataBase db) {
-                String value = insert.getOptionNotEmpty("Digite o nome: ");
+                String value = getOptionNotEmpty("Digite o nome: ");
                 if (value != null)
                         db.eraseUser(value);
         }
         User profileInfos(User my_user) {
-                User tmp = clone.User(my_user);
+                User tmp = clone(my_user);
                 while (true) {
                         tmp.print();
                         switch (new Menu().editProfile(tmp)) {
                                 case 1:
-                                        tmp.setName(insert.getOption("Insira o nome: "));
+                                        tmp.setName(getOption("Insira o nome: "));
                                         break;
                                 case 2:
                                         CpfCnpjCheck checker = new CpfCnpjCheck();
-                                        String str = insert.getOption("Insira o valor: ");
+                                        String str = getOption("Insira o valor: ");
                                         String res = checker.isValid(str);
                                         tmp.setPeople_type(res);
                                         tmp.setCpfCnpj(str);
                                         break;
                                 case 3:
                                         Phone n = new Phone();
-                                        n.setDdd(insert.getOption("Insira o ddd: "));
-                                        n.setNumber(insert.getOption("Insira o número: "));
+                                        n.setDdd(getOption("Insira o ddd: "));
+                                        n.setNumber(getOption("Insira o número: "));
                                         tmp.setPhone(n);
                                         break;
                                 case 4:
-                                        tmp.setEmail(insert.getOption("Insira o email: "));
+                                        tmp.setEmail(getOption("Insira o email: "));
                                         break;
                                 case 5:
                                         defineAddressForUser(tmp);
@@ -113,7 +154,7 @@ public class Controller{
                                 case 6:
                                         return my_user;
                                 case 7:
-                                        if (insert.confirmOption()) {
+                                        if (confirmOption()) {
                                                 return tmp;
                                         }
                                 default:
@@ -127,7 +168,26 @@ public class Controller{
          * Contém uma busca do CEP e preenchimento
          */
         void defineAddressForUser(User my_user) {
-                new AddressOperations().edit(my_user);
+                Address tmp = clone(my_user.getAddress());
+                boolean exit = false;
+                while (!exit) {
+                        tmp.print();
+                        switch (new Menu().editProfile_Address(my_user)) {
+                                case 1 : searchCEP(tmp); break;
+                                case 2 : tmp.setStreet(getOption("Insira o endereço: ")); break;
+                                case 3 : tmp.setNumber(getOption("Insira o número: ")); break;
+                                case 4 : tmp.setComplement(getOption("Insira o complemento: ")); break;
+                                case 5 : tmp.setNeighborhood(getOption("Insira o bairro: ")); break;
+                                case 6 : tmp.setCity(getOption("Insira a cidade: ")); break;
+                                case 7 : tmp.setState(getOption("Insira a UF: ")); break;
+                                case 8 : exit = true; break;
+                                case 9 : if (confirmOption()) {
+                                        my_user.setAddress(tmp);
+                                        exit = true;
+                                        break;
+                                }
+                        }
+                }
         }
 
         /*
@@ -139,13 +199,13 @@ public class Controller{
                 username = password = "";
                 while (!exit) {
                         switch (new Menu().editLogin()) {
-                                case 1: username = insert.getOption("insira o username: "); break;
-                                case 2: password = insert.getOption("Insira a senha: "); break;
+                                case 1: username = getOption("insira o username: "); break;
+                                case 2: password = getOption("Insira a senha: "); break;
                                 case 3:
                                         exit = true;
                                         break;
                                 case 4:
-                                        if (insert.confirmOption() && (!username.equals(""))) {
+                                        if (confirmOption() && (!username.equals(""))) {
                                                 user.setUsername(username);
                                                 user.setPassword(password);
                                                 exit = true;
@@ -153,5 +213,52 @@ public class Controller{
                                         }
                         }
                 }
+        }
+
+        void searchCEP(Address my_address) {
+                String cep = getOptionNotEmpty("Insira o CEP: ");
+                if (cep == null) return;
+                // Faz a busca para o cep
+                WebServiceCep webServiceCep = WebServiceCep.searchCep(cep);
+                // se a busca corresponder, insere os dados no objeto
+                if (webServiceCep.wasSuccessful()) {
+                        my_address.setZip(cep);
+                        my_address.setStreet(webServiceCep.getLogradouroFull());
+                        my_address.setNeighborhood(webServiceCep.getBairro());
+                        my_address.setCity(webServiceCep.getCidade());
+                        my_address.setState(webServiceCep.getUf());
+                }
+
+        }
+
+        // Métodos auxiliares para clonagem
+        User clone(User a) {
+                User novo = new User();
+                novo.setName(a.getName());
+                novo.setEmail(a.getEmail());
+                novo.setPhone(clone(a.getPhone()));
+                novo.setCpfCnpj(a.getCpfCnpj());
+                novo.setPeople_type(a.getPeople_type());
+                novo.setUsername(a.getUsername());
+                novo.setPassword(a.getPassword());
+                novo.setAddress(clone(a.getAddress()));
+                return novo;
+        }
+        Phone clone(Phone a) {
+                Phone novo = new Phone();
+                novo.setDdd(a.getDdd());
+                novo.setNumber(a.getNumber());
+                return novo;
+        }
+        Address clone(Address a) {
+                Address novo = new Address();
+                novo.setStreet(a.getStreet());
+                novo.setNumber(a.getNumber());
+                novo.setComplement(a.getComplement());
+                novo.setNeighborhood(a.getNeighborhood());
+                novo.setCity(a.getCity());
+                novo.setState(a.getState());
+                novo.setZip(a.getZip());
+                return novo;
         }
 }

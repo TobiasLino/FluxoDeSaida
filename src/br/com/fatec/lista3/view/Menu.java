@@ -87,13 +87,20 @@ public class Menu {
                         + "\t7. Voltar.\n");
                 return ctrl.getIntOption("Qual sua opção? : ");
         }
+        public int editFisical() {
+                System.out.println("\nInsira a opção desejada\n"
+                        + "\t1. Inserir salário.\n"
+                        + "\t2. Inserir Investimento.\n"
+                        + "\t3. Cancelar.\n"
+                        + "\t4. Salvar\n");
+                return ctrl.getIntOption("Qual sua opção? : ");
+        }
 
         /*
          * mainMenu::meuPerfil
          */
         public int meuPerfil(User my_user) {
                 my_user.print();
-
                 System.out.println("\nSelecione uma das opções\n"
                         + "\t1. Editar\n"
                         + "\t2. Remover Conta\n"

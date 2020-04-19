@@ -1,13 +1,16 @@
 package br.com.fatec.lista3.controller;
 
+import br.com.fatec.lista3.model.flow.Input;
 import br.com.fatec.lista3.model.user.User;
 
 public class Status {
         private boolean logged;
         private User user;
         private boolean adminStatus;
+        public Input input;
 
         public Status() {
+                this.input = null;
                 logged = false;
                 user = new User();
                 adminStatus = false;

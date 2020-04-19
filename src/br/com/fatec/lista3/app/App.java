@@ -30,13 +30,13 @@ public class App {
         public static Menu menu = new Menu();
         public static Status status = new Status();
 
-        /* Inicia o programa */
+        /* Inicia o programa após logar-se */
         public static void __start__() {
                 boolean exit = false;
                 while (!exit) {
                         switch (menu.mainMenu()) {
                                 /* Meu flow */
-                                case 1: ctrl.myFlow(status.getUser()); break;
+                                case 1: ctrl.myFlow(db, status); break;
                                 /* Meu Perfil */
                                 case 2: ctrl.myProfile(status.getUser(), db); break;
                                 /* Sair */
@@ -46,7 +46,7 @@ public class App {
                         }
                 }
         }
-
+        /* Inicia o processo de login */
         public static void __init__() {
                 while (!status.isLogged()) {
                         switch (menu.login()) {
