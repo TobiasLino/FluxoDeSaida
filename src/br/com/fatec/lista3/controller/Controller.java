@@ -27,12 +27,15 @@ import br.com.fatec.lista3.model.user.User;
 import br.com.fatec.lista3.view.Menu;
 import com.google.api.client.util.Data;
 import com.google.api.client.util.DateTime;
+import org.dom4j.Document;
 import org.lavieri.modelutil.cep.WebServiceCep;
 
+import java.util.Map;
 import java.util.Scanner;
 
 public class Controller {
         private Scanner scan = new Scanner(System.in);
+        private Clone cloner = new Clone();
         // getOption retorna a opção do usuário mediante uma mensagem.
         /* getOption sem verificação de string vazia */
         public String getOption(String message) {
@@ -57,17 +60,25 @@ public class Controller {
                         ret = Integer.parseInt(to_int);
                 return ret;
         }
-
+        // getOption com retorno em Double
+        public double getDoubleOption(String message) {
+                System.out.print(message);
+                String to_double = scan.nextLine();
+                double ret = 0;
+                if (!to_double.isEmpty() && canBeInt(to_double))
+                        ret = Integer.parseInt(to_double);
+                return ret;
+        }
         /* Verifica se uma string contém apenas números */
         public boolean canBeInt(String str) {
                 return str.matches("[0-9]*");
         }
-
         /* Retorna true se o cliente confirmar a operação */
         public boolean confirmOption() {
                 String opt = getOption("Confirmar ? [S/n] : ");
                 return opt.equals("") || opt.equals("S") || opt.equals("s");
         }
+
 
         /* ******************************************************** *
          * Operações dos menus                                      *
@@ -120,10 +131,46 @@ public class Controller {
                 }
         }
         private void newInput(Fisical input) {
-
+                Fisical tmp = cloner.clone(input);
+                boolean exit = false;
+                while (!exit) {
+                        tmp.print();
+                        switch (new Menu().editFisical()) {
+                                case 1: insertSalary(tmp); break;
+                                case 2: insertInvestment(tmp); break;
+                                case 3: exit = true; break;
+                                case 4:
+                                        if (confirmOption()) {
+                                                input = cloner.clone(tmp);
+                                                exit = true; break;
+                                        }
+                                default:
+                                        System.out.println("\nInsira um valor válido.");
+                                        break;
+                        }
+                }
         }
-        private void newInput(Legal legal) {
+        private void insertSalary(Fisical a) {
+                double buffer = getDoubleOption("Insira o salário: ");
+                a.setSalary(buffer);
+        }
+        private void insertInvestment(Input a) {
+                int exit = 0;
+                while (exit == 0)
+                        exit = insertInvestment(a.getInvestments());
+        }
+        private int insertInvestment(Map<String, Double> investments) {
+                String buffer_1 = getOptionNotEmpty("Insira o investimento [ENTER para sair] : ");
+                double buffer_2 = getDoubleOption("Insira o valor [ENTER para sair] : ");
+                if (buffer_1 != null) {
+                        investments.put(buffer_1, buffer_2);
+                        return 0;
+                } else return 1;
+        }
 
+        private void newInput(Legal legal) {
+                Legal tmp = cloner.clone(legal);
+                boolean exit = false;
         }
 
 
@@ -163,7 +210,7 @@ public class Controller {
                         db.eraseUser(value);
         }
         User profileInfos(User my_user) {
-                User tmp = clone(my_user);
+                User tmp = cloner.clone(my_user);
                 while (true) {
                         tmp.print();
                         switch (new Menu().editProfile(tmp)) {
@@ -206,7 +253,7 @@ public class Controller {
          * Contém uma busca do CEP e preenchimento
          */
         void defineAddressForUser(User my_user) {
-                Address tmp = clone(my_user.getAddress());
+                Address tmp = cloner.clone(my_user.getAddress());
                 boolean exit = false;
                 while (!exit) {
                         tmp.print();
@@ -269,34 +316,4 @@ public class Controller {
 
         }
 
-        // Métodos auxiliares para clonagem
-        User clone(User a) {
-                User novo = new User();
-                novo.setName(a.getName());
-                novo.setEmail(a.getEmail());
-                novo.setPhone(clone(a.getPhone()));
-                novo.setCpfCnpj(a.getCpfCnpj());
-                novo.setPeople_type(a.getPeople_type());
-                novo.setUsername(a.getUsername());
-                novo.setPassword(a.getPassword());
-                novo.setAddress(clone(a.getAddress()));
-                return novo;
-        }
-        Phone clone(Phone a) {
-                Phone novo = new Phone();
-                novo.setDdd(a.getDdd());
-                novo.setNumber(a.getNumber());
-                return novo;
-        }
-        Address clone(Address a) {
-                Address novo = new Address();
-                novo.setStreet(a.getStreet());
-                novo.setNumber(a.getNumber());
-                novo.setComplement(a.getComplement());
-                novo.setNeighborhood(a.getNeighborhood());
-                novo.setCity(a.getCity());
-                novo.setState(a.getState());
-                novo.setZip(a.getZip());
-                return novo;
-        }
 }
